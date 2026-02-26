@@ -100,19 +100,16 @@ async function writeToBlob(
   data: TaskStore,
   expectedEtag: string
 ): Promise<{ etag: string }> {
-  const { put, head } = await import("@vercel/blob");
+  const { put, list } = await import("@vercel/blob");
 
-  // Optimistic concurrency check
+  // Optimistic concurrency check using list (head requires full URL)
   if (expectedEtag) {
-    try {
-      const existing = await head(BLOB_KEY);
-      const currentEtag = existing.uploadedAt.toISOString();
+    const { blobs } = await list({ prefix: BLOB_KEY, limit: 1 });
+    if (blobs.length > 0) {
+      const currentEtag = blobs[0].uploadedAt.toISOString();
       if (currentEtag !== expectedEtag) {
         throw new ConflictError("ETag mismatch — data was modified by another request");
       }
-    } catch (err) {
-      if (err instanceof ConflictError) throw err;
-      // Blob doesn't exist yet, no conflict
     }
   }
 
