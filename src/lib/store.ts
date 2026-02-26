@@ -1,6 +1,7 @@
 import { TaskStore } from "./types";
 
 const IS_VERCEL = process.env.VERCEL === "1";
+const HAS_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
 const BLOB_KEY = "tasks.json";
 
 // In-memory ETag for local dev
@@ -16,8 +17,12 @@ function bumpLocalEtag(): string {
 }
 
 export async function readTasks(): Promise<{ data: TaskStore; etag: string }> {
-  if (IS_VERCEL) {
+  if (IS_VERCEL && HAS_BLOB) {
     return readFromBlob();
+  }
+  if (IS_VERCEL) {
+    // Vercel without Blob configured — return empty store
+    return { data: { tasks: [] }, etag: "" };
   }
   return readFromFile();
 }
@@ -26,8 +31,11 @@ export async function writeTasks(
   data: TaskStore,
   expectedEtag: string
 ): Promise<{ etag: string }> {
-  if (IS_VERCEL) {
+  if (IS_VERCEL && HAS_BLOB) {
     return writeToBlob(data, expectedEtag);
+  }
+  if (IS_VERCEL) {
+    throw new Error("Blob store not configured — set BLOB_READ_WRITE_TOKEN");
   }
   return writeToFile(data, expectedEtag);
 }
