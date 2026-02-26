@@ -62,7 +62,7 @@ export async function PUT(
       );
     }
     return NextResponse.json(
-      { error: "Failed to update task" },
+      { error: "Failed to update task", detail: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -98,7 +98,7 @@ export async function DELETE(
       );
     }
     return NextResponse.json(
-      { error: "Failed to delete task" },
+      { error: "Failed to delete task", detail: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
