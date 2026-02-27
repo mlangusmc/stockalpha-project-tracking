@@ -116,6 +116,7 @@ async function writeToBlob(
   const blob = await put(BLOB_KEY, JSON.stringify(data, null, 2), {
     access: "public",
     addRandomSuffix: false,
+    allowOverwrite: true,
     contentType: "application/json",
   });
 
