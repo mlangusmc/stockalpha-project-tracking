@@ -43,7 +43,7 @@ export default function PinDialog({ open, onSuccess, onCancel }: PinDialogProps)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-sm rounded-lg bg-gray-900 border border-gray-700 p-6 shadow-xl">
+      <div className="w-full max-w-sm rounded-lg bg-gray-900 border border-gray-700 p-4 sm:p-6 shadow-xl mx-3 sm:mx-0">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-gray-400" />
@@ -79,14 +79,14 @@ export default function PinDialog({ open, onSuccess, onCancel }: PinDialogProps)
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 rounded-md border border-gray-700 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800"
+              className="flex-1 rounded-md border border-gray-700 px-3 py-2.5 sm:py-2 text-sm text-gray-300 hover:bg-gray-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !pin}
-              className="flex-1 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50"
+              className="flex-1 rounded-md bg-blue-600 px-3 py-2.5 sm:py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50"
             >
               {loading ? "Verifying..." : "Unlock"}
             </button>

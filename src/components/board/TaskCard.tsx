@@ -42,7 +42,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group rounded-lg border border-gray-800 bg-gray-800/80 p-3 shadow-sm hover:border-gray-700 hover:shadow-md cursor-pointer"
+      className="group rounded-lg border border-gray-800 bg-gray-800/80 p-2.5 sm:p-3 shadow-sm hover:border-gray-700 hover:shadow-md cursor-pointer touch-manipulation"
       onClick={() => onClick(task)}
     >
       <div className="flex items-start gap-2">
@@ -50,9 +50,9 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
           {...attributes}
           {...listeners}
           onClick={(e) => e.stopPropagation()}
-          className="mt-0.5 cursor-grab text-gray-600 opacity-0 group-hover:opacity-100 active:cursor-grabbing"
+          className="mt-0.5 cursor-grab text-gray-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 active:cursor-grabbing p-1 -m-1 touch-manipulation"
         >
-          <GripVertical className="h-4 w-4" />
+          <GripVertical className="h-5 w-5 sm:h-4 sm:w-4" />
         </button>
 
         <div className="min-w-0 flex-1">

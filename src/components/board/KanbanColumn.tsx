@@ -26,11 +26,11 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`flex h-full min-w-[280px] flex-col rounded-lg bg-gray-900/50 ${
+      className={`flex h-full min-w-[240px] sm:min-w-[280px] flex-col rounded-lg bg-gray-900/50 ${
         isOver ? "ring-2 ring-blue-500" : ""
       }`}
     >
-      <div className="flex items-center gap-2 px-3 py-2.5">
+      <div className="flex items-center gap-2 px-2.5 py-2 sm:px-3 sm:py-2.5">
         <span
           className={`inline-block h-2.5 w-2.5 rounded-full ${config.bgColor}`}
         />
@@ -44,7 +44,7 @@ export default function KanbanColumn({
 
       <div
         ref={setNodeRef}
-        className="flex flex-1 flex-col gap-2 overflow-y-auto p-2"
+        className="flex flex-1 flex-col gap-2 overflow-y-auto p-1.5 sm:p-2"
         style={{ minHeight: 80 }}
       >
         <SortableContext

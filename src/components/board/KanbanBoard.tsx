@@ -5,6 +5,7 @@ import {
   DragEndEvent,
   DragOverEvent,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   closestCorners,
@@ -31,6 +32,9 @@ export default function KanbanBoard({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
     })
   );
 
@@ -55,7 +59,6 @@ export default function KanbanBoard({
   }
 
   function handleDragOver(event: DragOverEvent) {
-    // Visual feedback is handled by the droppable highlight
     void event;
   }
 
@@ -66,14 +69,11 @@ export default function KanbanBoard({
     const taskId = active.id as string;
     const overId = over.id as string;
 
-    // Determine target column
     let targetStatus: Status;
 
-    // If dropped directly on a column
     if (STATUS_ORDER.includes(overId as Status)) {
       targetStatus = overId as Status;
     } else {
-      // Dropped on another task — find that task's column
       const overColumn = findColumnOfTask(overId);
       if (!overColumn) return;
       targetStatus = overColumn;
@@ -82,17 +82,14 @@ export default function KanbanBoard({
     const sourceColumn = findColumnOfTask(taskId);
     if (!sourceColumn) return;
 
-    // Calculate new order
     const targetTasks = tasksByStatus[targetStatus]
       .filter((t) => t.id !== taskId)
       .sort((a, b) => a.order - b.order);
 
     let newOrder: number;
     if (overId === targetStatus as string) {
-      // Dropped on column itself — put at end
       newOrder = targetTasks.length;
     } else {
-      // Dropped on a task — put at that task's position
       const overIndex = targetTasks.findIndex((t) => t.id === overId);
       newOrder = overIndex >= 0 ? overIndex : targetTasks.length;
     }
@@ -112,7 +109,7 @@ export default function KanbanBoard({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto p-4" style={{ minHeight: "calc(100vh - 120px)" }}>
+      <div className="flex gap-3 overflow-x-auto p-3 sm:gap-4 sm:p-4" style={{ minHeight: "calc(100vh - 56px)" }}>
         {STATUS_ORDER.map((status) => (
           <KanbanColumn
             key={status}

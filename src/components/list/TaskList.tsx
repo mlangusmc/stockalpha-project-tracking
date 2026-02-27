@@ -31,22 +31,22 @@ export default function TaskList({ tasks, onTaskClick }: TaskListProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-800 bg-gray-900 text-left">
-            <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-3 sm:px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
               Title
             </th>
-            <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-3 sm:px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
               Status
             </th>
-            <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-3 sm:px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500 hidden sm:table-cell">
               Priority
             </th>
-            <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-3 sm:px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500 hidden md:table-cell">
               Assignee
             </th>
-            <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-3 sm:px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500 hidden lg:table-cell">
               Repo
             </th>
-            <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-3 sm:px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500 hidden sm:table-cell">
               Due Date
             </th>
           </tr>
