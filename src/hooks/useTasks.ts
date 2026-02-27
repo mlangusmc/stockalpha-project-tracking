@@ -55,7 +55,9 @@ export function useTasks(filters?: TaskFilters) {
         }
         if (!res.ok) throw new Error("Failed to create task");
 
-        await fetchTasks();
+        const data = await res.json();
+        // Optimistic update: add the new task to local state immediately
+        setTasks((prev) => [...prev, data.task]);
         return { success: true };
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
@@ -84,7 +86,11 @@ export function useTasks(filters?: TaskFilters) {
         }
         if (!res.ok) throw new Error("Failed to update task");
 
-        await fetchTasks();
+        const data = await res.json();
+        // Optimistic update: replace the task in local state
+        setTasks((prev) =>
+          prev.map((t) => (t.id === id ? data.task : t))
+        );
         return { success: true };
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
@@ -110,7 +116,8 @@ export function useTasks(filters?: TaskFilters) {
         }
         if (!res.ok) throw new Error("Failed to delete task");
 
-        await fetchTasks();
+        // Optimistic update: remove the task from local state
+        setTasks((prev) => prev.filter((t) => t.id !== id));
         return { success: true };
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");

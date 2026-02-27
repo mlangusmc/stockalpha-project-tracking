@@ -89,7 +89,8 @@ async function readFromBlob(): Promise<{ data: TaskStore; etag: string }> {
   }
 
   const blob = blobs[0];
-  const response = await fetch(blob.downloadUrl);
+  const cacheBust = `${blob.downloadUrl}${blob.downloadUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
+  const response = await fetch(cacheBust, { cache: "no-store" });
   const data = (await response.json()) as TaskStore;
   const etag = blob.uploadedAt.toISOString();
 

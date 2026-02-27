@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
       tasks = tasks.filter((t) => t.status === status);
     }
 
-    return NextResponse.json({ tasks, etag });
+    return NextResponse.json(
+      { tasks, etag },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch {
     return NextResponse.json(
       { error: "Failed to read tasks" },
