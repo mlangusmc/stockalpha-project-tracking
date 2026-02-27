@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutGrid, List, Plus, Filter, ChevronDown } from "lucide-react";
+import { LayoutGrid, List, Plus, Filter, ChevronDown, Search, X } from "lucide-react";
 import { Assignee, Repo, Priority, TaskFilters } from "@/lib/types";
 import { ASSIGNEES, REPOS, PRIORITIES, ASSIGNEE_CONFIG, REPO_CONFIG, PRIORITY_CONFIG } from "@/lib/constants";
 
@@ -10,6 +10,8 @@ interface HeaderProps {
   onViewChange: (view: "kanban" | "list") => void;
   filters: TaskFilters;
   onFiltersChange: (filters: TaskFilters) => void;
+  search: string;
+  onSearchChange: (search: string) => void;
   onNewTask: () => void;
 }
 
@@ -18,6 +20,8 @@ export default function Header({
   onViewChange,
   filters,
   onFiltersChange,
+  search,
+  onSearchChange,
   onNewTask,
 }: HeaderProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -33,6 +37,26 @@ export default function Header({
         <h1 className="text-lg font-bold text-gray-50 sm:text-xl whitespace-nowrap">
           StockAlpha Tracker
         </h1>
+
+        {/* Search bar - desktop */}
+        <div className="relative hidden sm:block flex-1 max-w-xs">
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search tasks..."
+            className="w-full rounded-md border border-gray-700 bg-gray-800 py-1 pl-8 pr-8 text-sm text-gray-300 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          {search && (
+            <button
+              onClick={() => onSearchChange("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Filter toggle (mobile) / inline filters (desktop) */}
@@ -146,6 +170,24 @@ export default function Header({
       {/* Mobile filter drawer */}
       {filtersOpen && (
         <div className="mt-2.5 flex flex-col gap-2 border-t border-gray-800 pt-2.5 sm:hidden">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search tasks..."
+              className="w-full rounded-md border border-gray-700 bg-gray-800 py-2 pl-9 pr-9 text-sm text-gray-300 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            {search && (
+              <button
+                onClick={() => onSearchChange("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
           <select
             value={filters.assignee || "all"}
             onChange={(e) =>

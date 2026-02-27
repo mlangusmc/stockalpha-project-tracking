@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import Header from "@/components/layout/Header";
 import PinDialog from "@/components/layout/PinDialog";
 import TaskDialog from "@/components/task/TaskDialog";
@@ -14,11 +14,22 @@ import { Loader2 } from "lucide-react";
 export default function Home() {
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [filters, setFilters] = useState<TaskFilters>({});
+  const [search, setSearch] = useState("");
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const { tasks, loading, error, createTask, updateTask, deleteTask } =
     useTasks(filters);
+
+  const filteredTasks = useMemo(() => {
+    if (!search.trim()) return tasks;
+    const q = search.toLowerCase();
+    return tasks.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q)
+    );
+  }, [tasks, search]);
   const {
     showPinDialog,
     handleAuthRequired,
@@ -110,6 +121,8 @@ export default function Home() {
         onViewChange={setView}
         filters={filters}
         onFiltersChange={setFilters}
+        search={search}
+        onSearchChange={setSearch}
         onNewTask={handleNewTask}
       />
 
@@ -125,13 +138,13 @@ export default function Home() {
           </div>
         ) : view === "kanban" ? (
           <KanbanBoard
-            tasks={tasks}
+            tasks={filteredTasks}
             onTaskClick={handleTaskClick}
             onTaskMove={handleTaskMove}
           />
         ) : (
           <div className="p-4">
-            <TaskList tasks={tasks} onTaskClick={handleTaskClick} />
+            <TaskList tasks={filteredTasks} onTaskClick={handleTaskClick} />
           </div>
         )}
       </main>
