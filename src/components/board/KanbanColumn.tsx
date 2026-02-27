@@ -5,7 +5,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Task, Status } from "@/lib/types";
+import { Task, Status, AppSettings } from "@/lib/types";
 import { STATUS_CONFIG } from "@/lib/constants";
 import TaskCard from "./TaskCard";
 
@@ -13,12 +13,14 @@ interface KanbanColumnProps {
   status: Status;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  settings: AppSettings;
 }
 
 export default function KanbanColumn({
   status,
   tasks,
   onTaskClick,
+  settings,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const config = STATUS_CONFIG[status];
@@ -52,7 +54,7 @@ export default function KanbanColumn({
           strategy={verticalListSortingStrategy}
         >
           {sorted.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={onTaskClick} />
+            <TaskCard key={task.id} task={task} onClick={onTaskClick} settings={settings} />
           ))}
         </SortableContext>
       </div>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { readTasks, writeTasks, ConflictError } from "@/lib/store";
 import { isAuthenticated } from "@/lib/auth";
 import { Comment } from "@/lib/types";
+import { DEFAULT_SETTINGS } from "@/lib/constants";
 
 export async function POST(
   request: Request,
@@ -30,9 +31,12 @@ export async function POST(
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
+    const settings = data.settings ?? DEFAULT_SETTINGS;
+    const defaultAuthor = settings.assignees.find((a) => a.name !== "unassigned")?.name ?? "mlang";
+
     const comment: Comment = {
       id: crypto.randomUUID(),
-      author: author || "mlang",
+      author: author || defaultAuthor,
       content: content.trim(),
       createdAt: new Date().toISOString(),
     };

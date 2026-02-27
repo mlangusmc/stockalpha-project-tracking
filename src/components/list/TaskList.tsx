@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
-import { Task } from "@/lib/types";
+import { Task, AppSettings } from "@/lib/types";
 import TaskRow from "./TaskRow";
 
 type SortField = "title" | "status" | "priority" | "assignee" | "repo" | "dueDate";
@@ -14,6 +14,7 @@ const PRIORITY_ORDER = ["low", "medium", "high"];
 interface TaskListProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  settings: AppSettings;
 }
 
 function compareTasks(a: Task, b: Task, field: SortField, dir: SortDirection): number {
@@ -79,7 +80,7 @@ function SortHeader({ label, field, currentField, currentDir, onSort, className 
   );
 }
 
-export default function TaskList({ tasks, onTaskClick }: TaskListProps) {
+export default function TaskList({ tasks, onTaskClick, settings }: TaskListProps) {
   const [sortField, setSortField] = useState<SortField>("status");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
 
@@ -124,7 +125,7 @@ export default function TaskList({ tasks, onTaskClick }: TaskListProps) {
         </thead>
         <tbody>
           {sorted.map((task) => (
-            <TaskRow key={task.id} task={task} onClick={onTaskClick} />
+            <TaskRow key={task.id} task={task} onClick={onTaskClick} settings={settings} />
           ))}
         </tbody>
       </table>

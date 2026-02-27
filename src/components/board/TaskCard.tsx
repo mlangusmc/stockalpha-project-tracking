@@ -3,19 +3,20 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-import { Task } from "@/lib/types";
+import { Task, AppSettings } from "@/lib/types";
 import {
   PRIORITY_CONFIG,
-  ASSIGNEE_CONFIG,
-  REPO_CONFIG,
+  getAssigneeConfig,
+  getRepoConfig,
 } from "@/lib/constants";
 
 interface TaskCardProps {
   task: Task;
   onClick: (task: Task) => void;
+  settings: AppSettings;
 }
 
-export default function TaskCard({ task, onClick }: TaskCardProps) {
+export default function TaskCard({ task, onClick, settings }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -32,8 +33,8 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
   };
 
   const priority = PRIORITY_CONFIG[task.priority];
-  const assignee = ASSIGNEE_CONFIG[task.assignee];
-  const repo = REPO_CONFIG[task.repo];
+  const assignee = getAssigneeConfig(task.assignee, settings.assignees);
+  const repo = getRepoConfig(task.repo, settings.repos);
 
   const isOverdue =
     task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done";

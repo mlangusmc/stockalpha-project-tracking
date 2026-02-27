@@ -1,23 +1,24 @@
 "use client";
 
-import { Task } from "@/lib/types";
+import { Task, AppSettings } from "@/lib/types";
 import {
   STATUS_CONFIG,
   PRIORITY_CONFIG,
-  ASSIGNEE_CONFIG,
-  REPO_CONFIG,
+  getAssigneeConfig,
+  getRepoConfig,
 } from "@/lib/constants";
 
 interface TaskRowProps {
   task: Task;
   onClick: (task: Task) => void;
+  settings: AppSettings;
 }
 
-export default function TaskRow({ task, onClick }: TaskRowProps) {
+export default function TaskRow({ task, onClick, settings }: TaskRowProps) {
   const status = STATUS_CONFIG[task.status];
   const priority = PRIORITY_CONFIG[task.priority];
-  const assignee = ASSIGNEE_CONFIG[task.assignee];
-  const repo = REPO_CONFIG[task.repo];
+  const assignee = getAssigneeConfig(task.assignee, settings.assignees);
+  const repo = getRepoConfig(task.repo, settings.repos);
 
   const isOverdue =
     task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done";

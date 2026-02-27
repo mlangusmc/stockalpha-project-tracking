@@ -2,16 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { X, Trash2 } from "lucide-react";
-import { Task, Status, Priority, Assignee, Repo, Comment } from "@/lib/types";
+import { Task, Status, Priority, AppSettings } from "@/lib/types";
 import {
   STATUSES,
   PRIORITIES,
-  ASSIGNEES,
-  REPOS,
   STATUS_CONFIG,
   PRIORITY_CONFIG,
-  ASSIGNEE_CONFIG,
-  REPO_CONFIG,
+  getAssigneeConfig,
 } from "@/lib/constants";
 
 interface TaskDialogProps {
@@ -19,9 +16,10 @@ interface TaskDialogProps {
   task?: Task | null;
   onSave: (data: Partial<Task>) => void;
   onDelete?: (id: string) => void;
-  onAddComment?: (taskId: string, comment: { author: Assignee; content: string }) => void;
+  onAddComment?: (taskId: string, comment: { author: string; content: string }) => void;
   onDeleteComment?: (taskId: string, commentId: string) => void;
   onClose: () => void;
+  settings: AppSettings;
 }
 
 function timeAgo(dateStr: string): string {
@@ -43,16 +41,23 @@ export default function TaskDialog({
   onAddComment,
   onDeleteComment,
   onClose,
+  settings,
 }: TaskDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Status>("backlog");
   const [priority, setPriority] = useState<Priority>("medium");
-  const [assignee, setAssignee] = useState<Assignee>("unassigned");
-  const [repo, setRepo] = useState<Repo>("stockmarkettoday-frontend");
+  const [assignee, setAssignee] = useState("unassigned");
+  const [repo, setRepo] = useState(settings.repos[0]?.name ?? "");
   const [dueDate, setDueDate] = useState("");
   const [commentText, setCommentText] = useState("");
-  const [commentAuthor, setCommentAuthor] = useState<Assignee>("mlang");
+  const [commentAuthor, setCommentAuthor] = useState(
+    settings.assignees.find((a) => a.name !== "unassigned")?.name ?? "mlang"
+  );
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  // Filter out "unassigned" from comment authors
+  const commentAuthors = settings.assignees.filter((a) => a.name !== "unassigned");
 
   useEffect(() => {
     if (task) {
@@ -64,17 +69,18 @@ export default function TaskDialog({
       setRepo(task.repo);
       setDueDate(task.dueDate ? task.dueDate.split("T")[0] : "");
       setCommentText("");
+      setConfirmingDelete(false);
     } else {
       setTitle("");
       setDescription("");
       setStatus("backlog");
       setPriority("medium");
       setAssignee("unassigned");
-      setRepo("stockmarkettoday-frontend");
+      setRepo(settings.repos[0]?.name ?? "");
       setDueDate("");
       setCommentText("");
     }
-  }, [task, open]);
+  }, [task, open, settings.repos]);
 
   if (!open) return null;
 
@@ -179,12 +185,12 @@ export default function TaskDialog({
               </label>
               <select
                 value={assignee}
-                onChange={(e) => setAssignee(e.target.value as Assignee)}
+                onChange={(e) => setAssignee(e.target.value)}
                 className={inputClasses}
               >
-                {ASSIGNEES.map((a) => (
-                  <option key={a} value={a}>
-                    {ASSIGNEE_CONFIG[a].label}
+                {settings.assignees.map((a) => (
+                  <option key={a.name} value={a.name}>
+                    {a.label}
                   </option>
                 ))}
               </select>
@@ -196,12 +202,12 @@ export default function TaskDialog({
               </label>
               <select
                 value={repo}
-                onChange={(e) => setRepo(e.target.value as Repo)}
+                onChange={(e) => setRepo(e.target.value)}
                 className={inputClasses}
               >
-                {REPOS.map((r) => (
-                  <option key={r} value={r}>
-                    {REPO_CONFIG[r].shortLabel}
+                {settings.repos.map((r) => (
+                  <option key={r.name} value={r.name}>
+                    {r.shortLabel}
                   </option>
                 ))}
               </select>
@@ -230,63 +236,57 @@ export default function TaskDialog({
                 <p className="mb-3 text-sm text-gray-500">No comments yet</p>
               ) : (
                 <div className="mb-3 space-y-3 max-h-48 overflow-y-auto">
-                  {(task?.comments ?? []).map((c) => (
-                    <div
-                      key={c.id}
-                      className="flex items-start gap-2 rounded-md bg-gray-800 p-2"
-                    >
-                      <span
-                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white ${
-                          c.author === "mlang"
-                            ? "bg-purple-600"
-                            : c.author === "Dusty"
-                              ? "bg-blue-600"
-                              : "bg-gray-600"
-                        }`}
+                  {(task?.comments ?? []).map((c) => {
+                    const authorConfig = getAssigneeConfig(c.author, settings.assignees);
+                    return (
+                      <div
+                        key={c.id}
+                        className="flex items-start gap-2 rounded-md bg-gray-800 p-2"
                       >
-                        {c.author === "mlang"
-                          ? "ML"
-                          : c.author === "Dusty"
-                            ? "DH"
-                            : "?"}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-gray-300">
-                            {c.author}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {timeAgo(c.createdAt)}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 text-sm text-gray-200 whitespace-pre-wrap break-words">
-                          {c.content}
-                        </p>
-                      </div>
-                      {onDeleteComment && (
-                        <button
-                          type="button"
-                          onClick={() => onDeleteComment(task!.id, c.id)}
-                          className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400"
+                        <span
+                          className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white ${authorConfig.color}`}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                          {authorConfig.initials}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-gray-300">
+                              {c.author}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {timeAgo(c.createdAt)}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-sm text-gray-200 whitespace-pre-wrap break-words">
+                            {c.content}
+                          </p>
+                        </div>
+                        {onDeleteComment && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteComment(task!.id, c.id)}
+                            className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
               <div className="flex gap-2">
                 <select
                   value={commentAuthor}
-                  onChange={(e) =>
-                    setCommentAuthor(e.target.value as Assignee)
-                  }
+                  onChange={(e) => setCommentAuthor(e.target.value)}
                   className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1.5 text-xs text-gray-100 focus:border-blue-500 focus:outline-none"
                 >
-                  <option value="mlang">mlang</option>
-                  <option value="Dusty">Dusty</option>
+                  {commentAuthors.map((a) => (
+                    <option key={a.name} value={a.name}>
+                      {a.label}
+                    </option>
+                  ))}
                 </select>
                 <input
                   type="text"
@@ -332,13 +332,33 @@ export default function TaskDialog({
 
           <div className="flex flex-wrap gap-2 pt-2">
             {isEdit && onDelete && (
-              <button
-                type="button"
-                onClick={() => onDelete(task!.id)}
-                className="rounded-md border border-red-800 px-3 py-2.5 sm:py-2 text-sm font-medium text-red-400 hover:bg-red-900/30"
-              >
-                Delete
-              </button>
+              confirmingDelete ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-red-400">Are you sure?</span>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(task!.id)}
+                    className="rounded-md bg-red-600 px-3 py-2.5 sm:py-2 text-sm font-medium text-white hover:bg-red-500"
+                  >
+                    Yes, delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingDelete(false)}
+                    className="rounded-md border border-gray-700 px-3 py-2.5 sm:py-2 text-sm text-gray-300 hover:bg-gray-800"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(true)}
+                  className="rounded-md border border-red-800 px-3 py-2.5 sm:py-2 text-sm font-medium text-red-400 hover:bg-red-900/30"
+                >
+                  Delete
+                </button>
+              )
             )}
             <div className="flex-1" />
             <button

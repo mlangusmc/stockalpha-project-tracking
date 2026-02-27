@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Task, TaskFilters, Assignee } from "@/lib/types";
+import { Task, TaskFilters } from "@/lib/types";
 
 export function useTasks(filters?: TaskFilters) {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -130,7 +130,7 @@ export function useTasks(filters?: TaskFilters) {
   const addComment = useCallback(
     async (
       taskId: string,
-      comment: { author: Assignee; content: string }
+      comment: { author: string; content: string }
     ): Promise<{ success: boolean; needsAuth?: boolean }> => {
       try {
         const res = await fetch(`/api/tasks/${taskId}/comments`, {

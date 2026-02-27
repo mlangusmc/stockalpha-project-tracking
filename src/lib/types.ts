@@ -1,7 +1,26 @@
 export type Status = "backlog" | "todo" | "in-progress" | "done";
 export type Priority = "low" | "medium" | "high";
-export type Assignee = "mlang" | "Dusty" | "unassigned";
-export type Repo = "stockmarkettoday-frontend" | "stockalpha-social-agent";
+export type Assignee = string;
+export type Repo = string;
+
+export interface AssigneeConfig {
+  name: string;
+  label: string;
+  initials: string;
+  color: string;
+}
+
+export interface RepoConfig {
+  name: string;
+  label: string;
+  shortLabel: string;
+  color: string;
+}
+
+export interface AppSettings {
+  assignees: AssigneeConfig[];
+  repos: RepoConfig[];
+}
 
 export interface Comment {
   id: string;
@@ -27,6 +46,7 @@ export interface Task {
 
 export interface TaskStore {
   tasks: Task[];
+  settings?: AppSettings;
 }
 
 export interface TaskFilters {

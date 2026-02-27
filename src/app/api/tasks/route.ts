@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readTasks, writeTasks, ConflictError } from "@/lib/store";
 import { isAuthenticated } from "@/lib/auth";
-import { Task, Status, Priority, Assignee, Repo } from "@/lib/types";
+import { Task, Status, Priority } from "@/lib/types";
+import { DEFAULT_SETTINGS } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
@@ -62,14 +63,17 @@ export async function POST(request: Request) {
       -1
     );
 
+    const settings = data.settings ?? DEFAULT_SETTINGS;
+    const defaultRepo = settings.repos[0]?.name ?? "stockmarkettoday-frontend";
+
     const now = new Date().toISOString();
     const newTask: Task = {
       id: String(maxId + 1),
       title: body.title || "Untitled",
       description: body.description || "",
       status: (body.status as Status) || "backlog",
-      assignee: (body.assignee as Assignee) || "unassigned",
-      repo: (body.repo as Repo) || "stockmarkettoday-frontend",
+      assignee: body.assignee || "unassigned",
+      repo: body.repo || defaultRepo,
       priority: (body.priority as Priority) || "medium",
       createdAt: now,
       updatedAt: now,

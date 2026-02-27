@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutGrid, List, Plus, Filter, ChevronDown, Search, X } from "lucide-react";
-import { Assignee, Repo, Priority, TaskFilters } from "@/lib/types";
-import { ASSIGNEES, REPOS, PRIORITIES, ASSIGNEE_CONFIG, REPO_CONFIG, PRIORITY_CONFIG } from "@/lib/constants";
+import { LayoutGrid, List, Plus, Filter, ChevronDown, Search, X, Settings } from "lucide-react";
+import { Priority, TaskFilters, AppSettings } from "@/lib/types";
+import { PRIORITIES, PRIORITY_CONFIG } from "@/lib/constants";
 
 interface HeaderProps {
   view: "kanban" | "list";
@@ -13,6 +13,8 @@ interface HeaderProps {
   search: string;
   onSearchChange: (search: string) => void;
   onNewTask: () => void;
+  settings: AppSettings;
+  onSettingsClick: () => void;
 }
 
 export default function Header({
@@ -23,6 +25,8 @@ export default function Header({
   search,
   onSearchChange,
   onNewTask,
+  settings,
+  onSettingsClick,
 }: HeaderProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -80,15 +84,15 @@ export default function Header({
               onChange={(e) =>
                 onFiltersChange({
                   ...filters,
-                  assignee: e.target.value as Assignee | "all",
+                  assignee: e.target.value === "all" ? "all" : e.target.value,
                 })
               }
               className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-sm text-gray-300"
             >
               <option value="all">All Assignees</option>
-              {ASSIGNEES.map((a) => (
-                <option key={a} value={a}>
-                  {ASSIGNEE_CONFIG[a].label}
+              {settings.assignees.map((a) => (
+                <option key={a.name} value={a.name}>
+                  {a.label}
                 </option>
               ))}
             </select>
@@ -98,15 +102,15 @@ export default function Header({
               onChange={(e) =>
                 onFiltersChange({
                   ...filters,
-                  repo: e.target.value as Repo | "all",
+                  repo: e.target.value === "all" ? "all" : e.target.value,
                 })
               }
               className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-sm text-gray-300"
             >
               <option value="all">All Repos</option>
-              {REPOS.map((r) => (
-                <option key={r} value={r}>
-                  {REPO_CONFIG[r].shortLabel}
+              {settings.repos.map((r) => (
+                <option key={r.name} value={r.name}>
+                  {r.shortLabel}
                 </option>
               ))}
             </select>
@@ -129,6 +133,14 @@ export default function Header({
               ))}
             </select>
           </div>
+
+          {/* Settings gear */}
+          <button
+            onClick={onSettingsClick}
+            className="rounded-md border border-gray-700 bg-gray-800 p-1.5 text-gray-400 hover:bg-gray-700 hover:text-gray-300"
+          >
+            <Settings className="h-4 w-4" />
+          </button>
 
           {/* View toggle */}
           <div className="flex rounded-md border border-gray-700">
@@ -193,15 +205,15 @@ export default function Header({
             onChange={(e) =>
               onFiltersChange({
                 ...filters,
-                assignee: e.target.value as Assignee | "all",
+                assignee: e.target.value === "all" ? "all" : e.target.value,
               })
             }
             className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-300"
           >
             <option value="all">All Assignees</option>
-            {ASSIGNEES.map((a) => (
-              <option key={a} value={a}>
-                {ASSIGNEE_CONFIG[a].label}
+            {settings.assignees.map((a) => (
+              <option key={a.name} value={a.name}>
+                {a.label}
               </option>
             ))}
           </select>
@@ -211,15 +223,15 @@ export default function Header({
             onChange={(e) =>
               onFiltersChange({
                 ...filters,
-                repo: e.target.value as Repo | "all",
+                repo: e.target.value === "all" ? "all" : e.target.value,
               })
             }
             className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-300"
           >
             <option value="all">All Repos</option>
-            {REPOS.map((r) => (
-              <option key={r} value={r}>
-                {REPO_CONFIG[r].shortLabel}
+            {settings.repos.map((r) => (
+              <option key={r.name} value={r.name}>
+                {r.shortLabel}
               </option>
             ))}
           </select>

@@ -1,4 +1,4 @@
-import { Status, Priority, Assignee, Repo } from "./types";
+import { Status, Priority, AppSettings, AssigneeConfig, RepoConfig } from "./types";
 
 export const STATUS_CONFIG: Record<
   Status,
@@ -38,32 +38,98 @@ export const PRIORITY_CONFIG: Record<
   high: { label: "High", color: "text-red-400", bgColor: "bg-red-900/50" },
 };
 
-export const ASSIGNEE_CONFIG: Record<
-  Assignee,
-  { label: string; initials: string; color: string }
-> = {
-  mlang: { label: "mlang", initials: "ML", color: "bg-purple-600" },
-  Dusty: { label: "Dusty", initials: "DH", color: "bg-blue-600" },
-  unassigned: { label: "Unassigned", initials: "?", color: "bg-gray-600" },
-};
-
-export const REPO_CONFIG: Record<Repo, { label: string; shortLabel: string; color: string }> = {
-  "stockmarkettoday-frontend": {
-    label: "stockmarkettoday-frontend",
-    shortLabel: "frontend",
-    color: "bg-emerald-900/50 text-emerald-400",
-  },
-  "stockalpha-social-agent": {
-    label: "stockalpha-social-agent",
-    shortLabel: "social-agent",
-    color: "bg-violet-900/50 text-violet-400",
-  },
-};
-
-export const ASSIGNEES: Assignee[] = ["mlang", "Dusty", "unassigned"];
-export const REPOS: Repo[] = [
-  "stockmarkettoday-frontend",
-  "stockalpha-social-agent",
-];
 export const PRIORITIES: Priority[] = ["low", "medium", "high"];
 export const STATUSES: Status[] = ["backlog", "todo", "in-progress", "done"];
+
+// --- Color palettes for dynamic assignees/repos ---
+
+export const ASSIGNEE_COLORS: string[] = [
+  "bg-purple-600",
+  "bg-blue-600",
+  "bg-emerald-600",
+  "bg-rose-600",
+  "bg-amber-600",
+  "bg-cyan-600",
+  "bg-pink-600",
+  "bg-indigo-600",
+  "bg-teal-600",
+  "bg-orange-600",
+  "bg-lime-600",
+  "bg-fuchsia-600",
+  "bg-sky-600",
+  "bg-violet-600",
+  "bg-red-600",
+];
+
+export const REPO_COLORS: string[] = [
+  "bg-emerald-900/50 text-emerald-400",
+  "bg-violet-900/50 text-violet-400",
+  "bg-blue-900/50 text-blue-400",
+  "bg-rose-900/50 text-rose-400",
+  "bg-amber-900/50 text-amber-400",
+  "bg-cyan-900/50 text-cyan-400",
+  "bg-pink-900/50 text-pink-400",
+  "bg-indigo-900/50 text-indigo-400",
+  "bg-teal-900/50 text-teal-400",
+  "bg-orange-900/50 text-orange-400",
+];
+
+// --- Default settings (matches old hardcoded values) ---
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  assignees: [
+    { name: "mlang", label: "mlang", initials: "ML", color: "bg-purple-600" },
+    { name: "Dusty", label: "Dusty", initials: "DH", color: "bg-blue-600" },
+    { name: "unassigned", label: "Unassigned", initials: "?", color: "bg-gray-600" },
+  ],
+  repos: [
+    {
+      name: "stockmarkettoday-frontend",
+      label: "stockmarkettoday-frontend",
+      shortLabel: "frontend",
+      color: "bg-emerald-900/50 text-emerald-400",
+    },
+    {
+      name: "stockalpha-social-agent",
+      label: "stockalpha-social-agent",
+      shortLabel: "social-agent",
+      color: "bg-violet-900/50 text-violet-400",
+    },
+  ],
+};
+
+// --- Lookup helpers with graceful fallbacks ---
+
+const FALLBACK_ASSIGNEE: AssigneeConfig = {
+  name: "",
+  label: "",
+  initials: "?",
+  color: "bg-gray-600",
+};
+
+const FALLBACK_REPO: RepoConfig = {
+  name: "",
+  label: "",
+  shortLabel: "",
+  color: "bg-gray-800 text-gray-400",
+};
+
+export function getAssigneeConfig(
+  name: string,
+  assignees: AssigneeConfig[]
+): AssigneeConfig {
+  const found = assignees.find((a) => a.name === name);
+  if (found) return found;
+  // Graceful fallback for unknown/removed assignees
+  return { ...FALLBACK_ASSIGNEE, name, label: name, initials: name.slice(0, 2).toUpperCase() };
+}
+
+export function getRepoConfig(
+  name: string,
+  repos: RepoConfig[]
+): RepoConfig {
+  const found = repos.find((r) => r.name === name);
+  if (found) return found;
+  // Graceful fallback for unknown/removed repos
+  return { ...FALLBACK_REPO, name, label: name, shortLabel: name };
+}

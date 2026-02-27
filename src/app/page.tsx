@@ -6,9 +6,11 @@ import PinDialog from "@/components/layout/PinDialog";
 import TaskDialog from "@/components/task/TaskDialog";
 import KanbanBoard from "@/components/board/KanbanBoard";
 import TaskList from "@/components/list/TaskList";
+import SettingsDialog from "@/components/settings/SettingsDialog";
 import { useTasks } from "@/hooks/useTasks";
 import { useAuth } from "@/hooks/useAuth";
-import { Task, TaskFilters, Status, Assignee } from "@/lib/types";
+import { useSettings } from "@/hooks/useSettings";
+import { Task, TaskFilters, Status, AppSettings } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
 export default function Home() {
@@ -16,7 +18,8 @@ export default function Home() {
   const [filters, setFilters] = useState<TaskFilters>({});
   const [search, setSearch] = useState("");
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const {
     tasks,
@@ -29,6 +32,8 @@ export default function Home() {
     deleteComment,
   } = useTasks(filters);
 
+  const { settings, updateSettings } = useSettings();
+
   const filteredTasks = useMemo(() => {
     if (!search.trim()) return tasks;
     const q = search.toLowerCase();
@@ -38,6 +43,12 @@ export default function Home() {
         t.description.toLowerCase().includes(q)
     );
   }, [tasks, search]);
+
+  const editingTask = useMemo(
+    () => (editingTaskId ? tasks.find((t) => t.id === editingTaskId) ?? null : null),
+    [editingTaskId, tasks]
+  );
+
   const {
     showPinDialog,
     handleAuthRequired,
@@ -46,12 +57,12 @@ export default function Home() {
   } = useAuth();
 
   const handleNewTask = useCallback(() => {
-    setEditingTask(null);
+    setEditingTaskId(null);
     setTaskDialogOpen(true);
   }, []);
 
   const handleTaskClick = useCallback((task: Task) => {
-    setEditingTask(task);
+    setEditingTaskId(task.id);
     setTaskDialogOpen(true);
   }, []);
 
@@ -72,14 +83,14 @@ export default function Home() {
             createTask(data);
           }
           setTaskDialogOpen(false);
-          setEditingTask(null);
+          setEditingTaskId(null);
         });
         return;
       }
 
       if (result.success) {
         setTaskDialogOpen(false);
-        setEditingTask(null);
+        setEditingTaskId(null);
       }
     },
     [editingTask, createTask, updateTask, handleAuthRequired]
@@ -93,21 +104,21 @@ export default function Home() {
         handleAuthRequired(() => {
           deleteTask(id);
           setTaskDialogOpen(false);
-          setEditingTask(null);
+          setEditingTaskId(null);
         });
         return;
       }
 
       if (result.success) {
         setTaskDialogOpen(false);
-        setEditingTask(null);
+        setEditingTaskId(null);
       }
     },
     [deleteTask, handleAuthRequired]
   );
 
   const handleAddComment = useCallback(
-    async (taskId: string, comment: { author: Assignee; content: string }) => {
+    async (taskId: string, comment: { author: string; content: string }) => {
       const result = await addComment(taskId, comment);
 
       if (result.needsAuth) {
@@ -148,6 +159,25 @@ export default function Home() {
     [updateTask, handleAuthRequired]
   );
 
+  const handleSettingsSave = useCallback(
+    async (newSettings: AppSettings) => {
+      const result = await updateSettings(newSettings);
+
+      if (result.needsAuth) {
+        handleAuthRequired(async () => {
+          await updateSettings(newSettings);
+          setSettingsOpen(false);
+        });
+        return;
+      }
+
+      if (result.success) {
+        setSettingsOpen(false);
+      }
+    },
+    [updateSettings, handleAuthRequired]
+  );
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header
@@ -158,6 +188,8 @@ export default function Home() {
         search={search}
         onSearchChange={setSearch}
         onNewTask={handleNewTask}
+        settings={settings}
+        onSettingsClick={() => setSettingsOpen(true)}
       />
 
       <main className="flex-1">
@@ -175,10 +207,11 @@ export default function Home() {
             tasks={filteredTasks}
             onTaskClick={handleTaskClick}
             onTaskMove={handleTaskMove}
+            settings={settings}
           />
         ) : (
           <div className="p-4">
-            <TaskList tasks={filteredTasks} onTaskClick={handleTaskClick} />
+            <TaskList tasks={filteredTasks} onTaskClick={handleTaskClick} settings={settings} />
           </div>
         )}
       </main>
@@ -192,8 +225,16 @@ export default function Home() {
         onDeleteComment={handleDeleteComment}
         onClose={() => {
           setTaskDialogOpen(false);
-          setEditingTask(null);
+          setEditingTaskId(null);
         }}
+        settings={settings}
+      />
+
+      <SettingsDialog
+        open={settingsOpen}
+        settings={settings}
+        onSave={handleSettingsSave}
+        onClose={() => setSettingsOpen(false)}
       />
 
       <PinDialog

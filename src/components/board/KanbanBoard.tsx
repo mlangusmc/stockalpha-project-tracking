@@ -10,7 +10,7 @@ import {
   useSensors,
   closestCorners,
 } from "@dnd-kit/core";
-import { Task, Status } from "@/lib/types";
+import { Task, Status, AppSettings } from "@/lib/types";
 import { STATUS_ORDER } from "@/lib/constants";
 import KanbanColumn from "./KanbanColumn";
 
@@ -22,12 +22,14 @@ interface KanbanBoardProps {
     newStatus: Status,
     newOrder: number
   ) => void;
+  settings: AppSettings;
 }
 
 export default function KanbanBoard({
   tasks,
   onTaskClick,
   onTaskMove,
+  settings,
 }: KanbanBoardProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -116,6 +118,7 @@ export default function KanbanBoard({
             status={status}
             tasks={tasksByStatus[status]}
             onTaskClick={onTaskClick}
+            settings={settings}
           />
         ))}
       </div>
