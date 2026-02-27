@@ -20,10 +20,10 @@ export default function Header({
   onNewTask,
 }: HeaderProps) {
   return (
-    <header className="border-b border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <header className="border-b border-gray-800 bg-gray-900 px-4 py-3 sm:px-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-gray-900">
+          <h1 className="text-xl font-bold text-gray-50">
             StockAlpha Tracker
           </h1>
         </div>
@@ -31,7 +31,7 @@ export default function Header({
         <div className="flex flex-wrap items-center gap-2">
           {/* Filters */}
           <div className="flex items-center gap-1.5">
-            <Filter className="h-4 w-4 text-gray-400" />
+            <Filter className="h-4 w-4 text-gray-500" />
 
             <select
               value={filters.assignee || "all"}
@@ -41,7 +41,7 @@ export default function Header({
                   assignee: e.target.value as Assignee | "all",
                 })
               }
-              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+              className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-sm text-gray-300"
             >
               <option value="all">All Assignees</option>
               {ASSIGNEES.map((a) => (
@@ -59,7 +59,7 @@ export default function Header({
                   repo: e.target.value as Repo | "all",
                 })
               }
-              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+              className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-sm text-gray-300"
             >
               <option value="all">All Repos</option>
               {REPOS.map((r) => (
@@ -77,7 +77,7 @@ export default function Header({
                   priority: e.target.value as Priority | "all",
                 })
               }
-              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+              className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-sm text-gray-300"
             >
               <option value="all">All Priorities</option>
               {PRIORITIES.map((p) => (
@@ -89,13 +89,13 @@ export default function Header({
           </div>
 
           {/* View toggle */}
-          <div className="flex rounded-md border border-gray-300">
+          <div className="flex rounded-md border border-gray-700">
             <button
               onClick={() => onViewChange("kanban")}
               className={`flex items-center gap-1 px-3 py-1 text-sm ${
                 view === "kanban"
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-50"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
               } rounded-l-md`}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -105,8 +105,8 @@ export default function Header({
               onClick={() => onViewChange("list")}
               className={`flex items-center gap-1 px-3 py-1 text-sm ${
                 view === "list"
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-50"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
               } rounded-r-md`}
             >
               <List className="h-4 w-4" />
@@ -117,7 +117,7 @@ export default function Header({
           {/* New task button */}
           <button
             onClick={onNewTask}
-            className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+            className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
           >
             <Plus className="h-4 w-4" />
             New Task

@@ -42,7 +42,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group rounded-lg border border-gray-200 bg-white p-3 shadow-sm hover:shadow-md cursor-pointer"
+      className="group rounded-lg border border-gray-800 bg-gray-800/80 p-3 shadow-sm hover:border-gray-700 hover:shadow-md cursor-pointer"
       onClick={() => onClick(task)}
     >
       <div className="flex items-start gap-2">
@@ -50,13 +50,13 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
           {...attributes}
           {...listeners}
           onClick={(e) => e.stopPropagation()}
-          className="mt-0.5 cursor-grab text-gray-300 opacity-0 group-hover:opacity-100 active:cursor-grabbing"
+          className="mt-0.5 cursor-grab text-gray-600 opacity-0 group-hover:opacity-100 active:cursor-grabbing"
         >
           <GripVertical className="h-4 w-4" />
         </button>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-900 truncate">
+          <p className="text-sm font-medium text-gray-100 truncate">
             {task.title}
           </p>
 
@@ -92,7 +92,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
             {task.dueDate && (
               <span
                 className={`text-xs ${
-                  isOverdue ? "font-medium text-red-600" : "text-gray-400"
+                  isOverdue ? "font-medium text-red-400" : "text-gray-500"
                 }`}
               >
                 {new Date(task.dueDate).toLocaleDateString()}

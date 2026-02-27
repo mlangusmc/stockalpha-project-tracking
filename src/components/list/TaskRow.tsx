@@ -25,9 +25,9 @@ export default function TaskRow({ task, onClick }: TaskRowProps) {
   return (
     <tr
       onClick={() => onClick(task)}
-      className="cursor-pointer border-b border-gray-100 hover:bg-gray-50"
+      className="cursor-pointer border-b border-gray-800/50 hover:bg-gray-800/50"
     >
-      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+      <td className="px-4 py-3 text-sm font-medium text-gray-100">
         {task.title}
       </td>
       <td className="px-4 py-3">
@@ -51,7 +51,7 @@ export default function TaskRow({ task, onClick }: TaskRowProps) {
           >
             {assignee.initials}
           </span>
-          <span className="text-sm text-gray-600">{assignee.label}</span>
+          <span className="text-sm text-gray-400">{assignee.label}</span>
         </div>
       </td>
       <td className="px-4 py-3">
@@ -61,7 +61,7 @@ export default function TaskRow({ task, onClick }: TaskRowProps) {
       </td>
       <td className="px-4 py-3 text-sm text-gray-500">
         {task.dueDate ? (
-          <span className={isOverdue ? "font-medium text-red-600" : ""}>
+          <span className={isOverdue ? "font-medium text-red-400" : ""}>
             {new Date(task.dueDate).toLocaleDateString()}
           </span>
         ) : (

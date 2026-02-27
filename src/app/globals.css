@@ -3,3 +3,7 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
 }
+
+::selection {
+  background-color: rgb(59 130 246 / 0.4);
+}

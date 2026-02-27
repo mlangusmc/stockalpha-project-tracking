@@ -74,16 +74,19 @@ export default function TaskDialog({
 
   const isEdit = !!task;
 
+  const inputClasses =
+    "w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="w-full max-w-lg rounded-lg bg-gray-900 border border-gray-700 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-gray-50">
             {isEdit ? "Edit Task" : "New Task"}
           </h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-md p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
           >
             <X className="h-5 w-5" />
           </button>
@@ -91,7 +94,7 @@ export default function TaskDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-300">
               Title
             </label>
             <input
@@ -100,31 +103,31 @@ export default function TaskDialog({
               onChange={(e) => setTitle(e.target.value)}
               required
               autoFocus
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className={inputClasses}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-300">
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className={inputClasses}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-gray-300">
                 Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as Status)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className={inputClasses}
               >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>
@@ -135,13 +138,13 @@ export default function TaskDialog({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-gray-300">
                 Priority
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className={inputClasses}
               >
                 {PRIORITIES.map((p) => (
                   <option key={p} value={p}>
@@ -152,13 +155,13 @@ export default function TaskDialog({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-gray-300">
                 Assignee
               </label>
               <select
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value as Assignee)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className={inputClasses}
               >
                 {ASSIGNEES.map((a) => (
                   <option key={a} value={a}>
@@ -169,13 +172,13 @@ export default function TaskDialog({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-gray-300">
                 Repo
               </label>
               <select
                 value={repo}
                 onChange={(e) => setRepo(e.target.value as Repo)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className={inputClasses}
               >
                 {REPOS.map((r) => (
                   <option key={r} value={r}>
@@ -187,14 +190,14 @@ export default function TaskDialog({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-300">
               Due Date
             </label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className={inputClasses}
             />
           </div>
 
@@ -203,7 +206,7 @@ export default function TaskDialog({
               <button
                 type="button"
                 onClick={() => onDelete(task!.id)}
-                className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                className="rounded-md border border-red-800 px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-900/30"
               >
                 Delete
               </button>
@@ -212,14 +215,14 @@ export default function TaskDialog({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim()}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50"
             >
               {isEdit ? "Save Changes" : "Create Task"}
             </button>

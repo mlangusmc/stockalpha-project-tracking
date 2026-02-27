@@ -116,10 +116,10 @@ export default function Home() {
       <main className="flex-1">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-20 text-red-500">
+          <div className="flex flex-col items-center justify-center py-20 text-red-400">
             <p className="text-lg font-medium">Error loading tasks</p>
             <p className="text-sm">{error}</p>
           </div>

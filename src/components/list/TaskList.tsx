@@ -19,7 +19,7 @@ export default function TaskList({ tasks, onTaskClick }: TaskListProps) {
 
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+      <div className="flex flex-col items-center justify-center py-16 text-gray-500">
         <p className="text-lg">No tasks found</p>
         <p className="text-sm">Create a task to get started</p>
       </div>
@@ -27,10 +27,10 @@ export default function TaskList({ tasks, onTaskClick }: TaskListProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-lg border border-gray-800">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-gray-200 bg-gray-50 text-left">
+          <tr className="border-b border-gray-800 bg-gray-900 text-left">
             <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
               Title
             </th>

@@ -26,8 +26,8 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`flex h-full min-w-[280px] flex-col rounded-lg bg-gray-50 ${
-        isOver ? "ring-2 ring-blue-400" : ""
+      className={`flex h-full min-w-[280px] flex-col rounded-lg bg-gray-900/50 ${
+        isOver ? "ring-2 ring-blue-500" : ""
       }`}
     >
       <div className="flex items-center gap-2 px-3 py-2.5">
@@ -37,7 +37,7 @@ export default function KanbanColumn({
         <h3 className={`text-sm font-semibold ${config.color}`}>
           {config.label}
         </h3>
-        <span className="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+        <span className="ml-auto rounded-full bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-400">
           {tasks.length}
         </span>
       </div>
