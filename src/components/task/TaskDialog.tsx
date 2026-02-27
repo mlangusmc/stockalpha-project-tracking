@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
-import { Task, Status, Priority, Assignee, Repo } from "@/lib/types";
+import { X, Trash2 } from "lucide-react";
+import { Task, Status, Priority, Assignee, Repo, Comment } from "@/lib/types";
 import {
   STATUSES,
   PRIORITIES,
@@ -19,7 +19,20 @@ interface TaskDialogProps {
   task?: Task | null;
   onSave: (data: Partial<Task>) => void;
   onDelete?: (id: string) => void;
+  onAddComment?: (taskId: string, comment: { author: Assignee; content: string }) => void;
+  onDeleteComment?: (taskId: string, commentId: string) => void;
   onClose: () => void;
+}
+
+function timeAgo(dateStr: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 export default function TaskDialog({
@@ -27,6 +40,8 @@ export default function TaskDialog({
   task,
   onSave,
   onDelete,
+  onAddComment,
+  onDeleteComment,
   onClose,
 }: TaskDialogProps) {
   const [title, setTitle] = useState("");
@@ -36,6 +51,8 @@ export default function TaskDialog({
   const [assignee, setAssignee] = useState<Assignee>("unassigned");
   const [repo, setRepo] = useState<Repo>("stockmarkettoday-frontend");
   const [dueDate, setDueDate] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [commentAuthor, setCommentAuthor] = useState<Assignee>("mlang");
 
   useEffect(() => {
     if (task) {
@@ -46,6 +63,7 @@ export default function TaskDialog({
       setAssignee(task.assignee);
       setRepo(task.repo);
       setDueDate(task.dueDate ? task.dueDate.split("T")[0] : "");
+      setCommentText("");
     } else {
       setTitle("");
       setDescription("");
@@ -54,6 +72,7 @@ export default function TaskDialog({
       setAssignee("unassigned");
       setRepo("stockmarkettoday-frontend");
       setDueDate("");
+      setCommentText("");
     }
   }, [task, open]);
 
@@ -200,6 +219,116 @@ export default function TaskDialog({
               className={inputClasses}
             />
           </div>
+
+          {isEdit && (
+            <div className="border-t border-gray-700 pt-4">
+              <h3 className="mb-3 text-sm font-medium text-gray-300">
+                Comments
+              </h3>
+
+              {(task?.comments ?? []).length === 0 ? (
+                <p className="mb-3 text-sm text-gray-500">No comments yet</p>
+              ) : (
+                <div className="mb-3 space-y-3 max-h-48 overflow-y-auto">
+                  {(task?.comments ?? []).map((c) => (
+                    <div
+                      key={c.id}
+                      className="flex items-start gap-2 rounded-md bg-gray-800 p-2"
+                    >
+                      <span
+                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white ${
+                          c.author === "mlang"
+                            ? "bg-purple-600"
+                            : c.author === "Dusty"
+                              ? "bg-blue-600"
+                              : "bg-gray-600"
+                        }`}
+                      >
+                        {c.author === "mlang"
+                          ? "ML"
+                          : c.author === "Dusty"
+                            ? "DH"
+                            : "?"}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-gray-300">
+                            {c.author}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {timeAgo(c.createdAt)}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-sm text-gray-200 whitespace-pre-wrap break-words">
+                          {c.content}
+                        </p>
+                      </div>
+                      {onDeleteComment && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteComment(task!.id, c.id)}
+                          className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <select
+                  value={commentAuthor}
+                  onChange={(e) =>
+                    setCommentAuthor(e.target.value as Assignee)
+                  }
+                  className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1.5 text-xs text-gray-100 focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="mlang">mlang</option>
+                  <option value="Dusty">Dusty</option>
+                </select>
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (
+                      e.key === "Enter" &&
+                      !e.shiftKey &&
+                      commentText.trim() &&
+                      onAddComment
+                    ) {
+                      e.preventDefault();
+                      onAddComment(task!.id, {
+                        author: commentAuthor,
+                        content: commentText.trim(),
+                      });
+                      setCommentText("");
+                    }
+                  }}
+                  placeholder="Add a comment..."
+                  className="flex-1 rounded-md border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-100 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  type="button"
+                  disabled={!commentText.trim()}
+                  onClick={() => {
+                    if (onAddComment && commentText.trim()) {
+                      onAddComment(task!.id, {
+                        author: commentAuthor,
+                        content: commentText.trim(),
+                      });
+                      setCommentText("");
+                    }
+                  }}
+                  className="rounded-md bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-200 hover:bg-gray-600 disabled:opacity-50"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-2 pt-2">
             {isEdit && onDelete && (

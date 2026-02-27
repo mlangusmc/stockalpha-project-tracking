@@ -3,6 +3,13 @@ export type Priority = "low" | "medium" | "high";
 export type Assignee = "mlang" | "Dusty" | "unassigned";
 export type Repo = "stockmarkettoday-frontend" | "stockalpha-social-agent";
 
+export interface Comment {
+  id: string;
+  author: Assignee;
+  content: string;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -15,6 +22,7 @@ export interface Task {
   updatedAt: string;
   dueDate: string | null;
   order: number;
+  comments: Comment[];
 }
 
 export interface TaskStore {

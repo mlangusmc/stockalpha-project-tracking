@@ -75,6 +75,7 @@ export async function POST(request: Request) {
       updatedAt: now,
       dueDate: body.dueDate || null,
       order: maxOrder + 1,
+      comments: [],
     };
 
     data.tasks.push(newTask);

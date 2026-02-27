@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Task, TaskFilters } from "@/lib/types";
+import { Task, TaskFilters, Assignee } from "@/lib/types";
 
 export function useTasks(filters?: TaskFilters) {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -127,6 +127,69 @@ export function useTasks(filters?: TaskFilters) {
     [fetchTasks]
   );
 
+  const addComment = useCallback(
+    async (
+      taskId: string,
+      comment: { author: Assignee; content: string }
+    ): Promise<{ success: boolean; needsAuth?: boolean }> => {
+      try {
+        const res = await fetch(`/api/tasks/${taskId}/comments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(comment),
+        });
+
+        if (res.status === 401) return { success: false, needsAuth: true };
+        if (res.status === 409) {
+          await fetchTasks();
+          return addComment(taskId, comment);
+        }
+        if (!res.ok) throw new Error("Failed to add comment");
+
+        const data = await res.json();
+        setTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? data.task : t))
+        );
+        return { success: true };
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+        return { success: false };
+      }
+    },
+    [fetchTasks]
+  );
+
+  const deleteComment = useCallback(
+    async (
+      taskId: string,
+      commentId: string
+    ): Promise<{ success: boolean; needsAuth?: boolean }> => {
+      try {
+        const res = await fetch(
+          `/api/tasks/${taskId}/comments?commentId=${commentId}`,
+          { method: "DELETE" }
+        );
+
+        if (res.status === 401) return { success: false, needsAuth: true };
+        if (res.status === 409) {
+          await fetchTasks();
+          return deleteComment(taskId, commentId);
+        }
+        if (!res.ok) throw new Error("Failed to delete comment");
+
+        const data = await res.json();
+        setTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? data.task : t))
+        );
+        return { success: true };
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+        return { success: false };
+      }
+    },
+    [fetchTasks]
+  );
+
   return {
     tasks,
     loading,
@@ -135,5 +198,7 @@ export function useTasks(filters?: TaskFilters) {
     createTask,
     updateTask,
     deleteTask,
+    addComment,
+    deleteComment,
   };
 }

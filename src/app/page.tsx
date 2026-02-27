@@ -8,7 +8,7 @@ import KanbanBoard from "@/components/board/KanbanBoard";
 import TaskList from "@/components/list/TaskList";
 import { useTasks } from "@/hooks/useTasks";
 import { useAuth } from "@/hooks/useAuth";
-import { Task, TaskFilters, Status } from "@/lib/types";
+import { Task, TaskFilters, Status, Assignee } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
 export default function Home() {
@@ -18,8 +18,16 @@ export default function Home() {
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const { tasks, loading, error, createTask, updateTask, deleteTask } =
-    useTasks(filters);
+  const {
+    tasks,
+    loading,
+    error,
+    createTask,
+    updateTask,
+    deleteTask,
+    addComment,
+    deleteComment,
+  } = useTasks(filters);
 
   const filteredTasks = useMemo(() => {
     if (!search.trim()) return tasks;
@@ -98,6 +106,32 @@ export default function Home() {
     [deleteTask, handleAuthRequired]
   );
 
+  const handleAddComment = useCallback(
+    async (taskId: string, comment: { author: Assignee; content: string }) => {
+      const result = await addComment(taskId, comment);
+
+      if (result.needsAuth) {
+        handleAuthRequired(() => {
+          addComment(taskId, comment);
+        });
+      }
+    },
+    [addComment, handleAuthRequired]
+  );
+
+  const handleDeleteComment = useCallback(
+    async (taskId: string, commentId: string) => {
+      const result = await deleteComment(taskId, commentId);
+
+      if (result.needsAuth) {
+        handleAuthRequired(() => {
+          deleteComment(taskId, commentId);
+        });
+      }
+    },
+    [deleteComment, handleAuthRequired]
+  );
+
   const handleTaskMove = useCallback(
     async (taskId: string, newStatus: Status, newOrder: number) => {
       const result = await updateTask(taskId, {
@@ -154,6 +188,8 @@ export default function Home() {
         task={editingTask}
         onSave={handleSave}
         onDelete={handleDelete}
+        onAddComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
         onClose={() => {
           setTaskDialogOpen(false);
           setEditingTask(null);
