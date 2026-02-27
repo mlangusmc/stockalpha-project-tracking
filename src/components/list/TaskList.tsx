@@ -8,7 +8,7 @@ import TaskRow from "./TaskRow";
 type SortField = "title" | "status" | "priority" | "assignee" | "repo" | "dueDate";
 type SortDirection = "asc" | "desc";
 
-const STATUS_ORDER = ["backlog", "todo", "in-progress", "done"];
+const STATUS_ORDER = ["backlog", "todo", "in-progress", "issues", "done"];
 const PRIORITY_ORDER = ["low", "medium", "high"];
 
 interface TaskListProps {

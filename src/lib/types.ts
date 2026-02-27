@@ -1,4 +1,4 @@
-export type Status = "backlog" | "todo" | "in-progress" | "done";
+export type Status = "backlog" | "todo" | "in-progress" | "issues" | "done";
 export type Priority = "low" | "medium" | "high";
 export type Assignee = string;
 export type Repo = string;

@@ -44,6 +44,7 @@ export default function KanbanBoard({
     backlog: [],
     todo: [],
     "in-progress": [],
+    issues: [],
     done: [],
   };
 

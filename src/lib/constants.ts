@@ -15,6 +15,11 @@ export const STATUS_CONFIG: Record<
     color: "text-amber-400",
     bgColor: "bg-amber-900/50",
   },
+  issues: {
+    label: "Issues",
+    color: "text-red-400",
+    bgColor: "bg-red-900/50",
+  },
   done: { label: "Done", color: "text-green-400", bgColor: "bg-green-900/50" },
 };
 
@@ -22,6 +27,7 @@ export const STATUS_ORDER: Status[] = [
   "backlog",
   "todo",
   "in-progress",
+  "issues",
   "done",
 ];
 
@@ -39,7 +45,7 @@ export const PRIORITY_CONFIG: Record<
 };
 
 export const PRIORITIES: Priority[] = ["low", "medium", "high"];
-export const STATUSES: Status[] = ["backlog", "todo", "in-progress", "done"];
+export const STATUSES: Status[] = ["backlog", "todo", "in-progress", "issues", "done"];
 
 // --- Color palettes for dynamic assignees/repos ---
 
