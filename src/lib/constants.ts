@@ -87,6 +87,11 @@ export const DEFAULT_SETTINGS: AppSettings = {
     { name: "mlang", label: "mlang", initials: "ML", color: "bg-purple-600" },
     { name: "Dusty", label: "Dusty", initials: "DH", color: "bg-blue-600" },
     { name: "unassigned", label: "Unassigned", initials: "?", color: "bg-gray-600" },
+    { name: "sheldon", label: "Sheldon", initials: "SH", color: "bg-orange-600" },
+    { name: "dev-agent", label: "Dev Agent", initials: "DA", color: "bg-green-600" },
+    { name: "test-agent", label: "Test Agent", initials: "TA", color: "bg-red-600" },
+    { name: "optimizer-agent", label: "Optimizer", initials: "OA", color: "bg-yellow-600" },
+    { name: "deploy-agent", label: "Deploy Agent", initials: "DE", color: "bg-cyan-600" },
   ],
   repos: [
     {
@@ -100,6 +105,12 @@ export const DEFAULT_SETTINGS: AppSettings = {
       label: "stockalpha-social-agent",
       shortLabel: "social-agent",
       color: "bg-violet-900/50 text-violet-400",
+    },
+    {
+      name: "sheldon-ai",
+      label: "sheldon-ai",
+      shortLabel: "sheldon",
+      color: "bg-orange-900/50 text-orange-400",
     },
   ],
 };
