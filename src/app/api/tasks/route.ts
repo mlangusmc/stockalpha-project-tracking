@@ -27,6 +27,10 @@ export async function GET(request: NextRequest) {
     if (status && status !== "all") {
       tasks = tasks.filter((t) => t.status === status);
     }
+    const client = url.searchParams.get("client");
+    if (client && client !== "all") {
+      tasks = tasks.filter((t) => t.client === client);
+    }
 
     return NextResponse.json(
       { tasks, etag },
@@ -74,6 +78,7 @@ export async function POST(request: Request) {
       status: (body.status as Status) || "backlog",
       assignee: body.assignee || "unassigned",
       repo: body.repo || defaultRepo,
+      client: body.client || "",
       priority: (body.priority as Priority) || "medium",
       createdAt: now,
       updatedAt: now,

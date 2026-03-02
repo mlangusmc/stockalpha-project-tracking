@@ -18,6 +18,8 @@ export function useTasks(filters?: TaskFilters) {
         params.set("repo", filters.repo);
       if (filters?.priority && filters.priority !== "all")
         params.set("priority", filters.priority);
+      if (filters?.client && filters.client !== "all")
+        params.set("client", filters.client);
 
       const res = await fetch(`/api/tasks?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch tasks");
@@ -31,7 +33,7 @@ export function useTasks(filters?: TaskFilters) {
     } finally {
       setLoading(false);
     }
-  }, [filters?.assignee, filters?.repo, filters?.priority]);
+  }, [filters?.assignee, filters?.repo, filters?.priority, filters?.client]);
 
   useEffect(() => {
     fetchTasks();

@@ -1,4 +1,4 @@
-import { Status, Priority, AppSettings, AssigneeConfig, RepoConfig } from "./types";
+import { Status, Priority, AppSettings, AssigneeConfig, RepoConfig, ClientConfig } from "./types";
 
 export const STATUS_CONFIG: Record<
   Status,
@@ -9,26 +9,69 @@ export const STATUS_CONFIG: Record<
     color: "text-gray-400",
     bgColor: "bg-gray-800",
   },
-  todo: { label: "To Do", color: "text-blue-400", bgColor: "bg-blue-900/50" },
-  "in-progress": {
-    label: "In Progress",
+  "pre-todo": {
+    label: "Pre-Contract To Do",
+    color: "text-purple-400",
+    bgColor: "bg-purple-900/50",
+  },
+  "pre-in-progress": {
+    label: "Pre-Contract In Progress",
+    color: "text-indigo-400",
+    bgColor: "bg-indigo-900/50",
+  },
+  "pre-complete": {
+    label: "Pre-Contract Complete",
+    color: "text-violet-400",
+    bgColor: "bg-violet-900/50",
+  },
+  "dev-todo": {
+    label: "Dev To Do",
+    color: "text-blue-400",
+    bgColor: "bg-blue-900/50",
+  },
+  "dev-in-progress": {
+    label: "Dev In Progress",
     color: "text-amber-400",
     bgColor: "bg-amber-900/50",
   },
-  issues: {
-    label: "Issues",
+  "dev-issue": {
+    label: "Dev Issue",
     color: "text-red-400",
     bgColor: "bg-red-900/50",
   },
-  done: { label: "Done", color: "text-green-400", bgColor: "bg-green-900/50" },
+  "dev-complete": {
+    label: "Dev Complete",
+    color: "text-green-400",
+    bgColor: "bg-green-900/50",
+  },
 };
 
 export const STATUS_ORDER: Status[] = [
   "backlog",
-  "todo",
-  "in-progress",
-  "issues",
-  "done",
+  "pre-todo",
+  "pre-in-progress",
+  "pre-complete",
+  "dev-todo",
+  "dev-in-progress",
+  "dev-issue",
+  "dev-complete",
+];
+
+export const STATUSES: Status[] = [
+  "backlog",
+  "pre-todo",
+  "pre-in-progress",
+  "pre-complete",
+  "dev-todo",
+  "dev-in-progress",
+  "dev-issue",
+  "dev-complete",
+];
+
+export const STATUS_GROUPS: { label: string; statuses: Status[] }[] = [
+  { label: "Backlog", statuses: ["backlog"] },
+  { label: "Pre-Contract", statuses: ["pre-todo", "pre-in-progress", "pre-complete"] },
+  { label: "Development", statuses: ["dev-todo", "dev-in-progress", "dev-issue", "dev-complete"] },
 ];
 
 export const PRIORITY_CONFIG: Record<
@@ -45,9 +88,8 @@ export const PRIORITY_CONFIG: Record<
 };
 
 export const PRIORITIES: Priority[] = ["low", "medium", "high"];
-export const STATUSES: Status[] = ["backlog", "todo", "in-progress", "issues", "done"];
 
-// --- Color palettes for dynamic assignees/repos ---
+// --- Color palettes for dynamic assignees/repos/clients ---
 
 export const ASSIGNEE_COLORS: string[] = [
   "bg-purple-600",
@@ -78,6 +120,19 @@ export const REPO_COLORS: string[] = [
   "bg-indigo-900/50 text-indigo-400",
   "bg-teal-900/50 text-teal-400",
   "bg-orange-900/50 text-orange-400",
+];
+
+export const CLIENT_COLORS: string[] = [
+  "bg-sky-900/50 text-sky-400",
+  "bg-lime-900/50 text-lime-400",
+  "bg-rose-900/50 text-rose-400",
+  "bg-amber-900/50 text-amber-400",
+  "bg-cyan-900/50 text-cyan-400",
+  "bg-fuchsia-900/50 text-fuchsia-400",
+  "bg-teal-900/50 text-teal-400",
+  "bg-orange-900/50 text-orange-400",
+  "bg-indigo-900/50 text-indigo-400",
+  "bg-emerald-900/50 text-emerald-400",
 ];
 
 // --- Default settings (matches old hardcoded values) ---
@@ -113,6 +168,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
       color: "bg-orange-900/50 text-orange-400",
     },
   ],
+  clients: [],
 };
 
 // --- Lookup helpers with graceful fallbacks ---
@@ -131,13 +187,18 @@ const FALLBACK_REPO: RepoConfig = {
   color: "bg-gray-800 text-gray-400",
 };
 
+const FALLBACK_CLIENT: ClientConfig = {
+  name: "",
+  label: "",
+  color: "bg-gray-800 text-gray-400",
+};
+
 export function getAssigneeConfig(
   name: string,
   assignees: AssigneeConfig[]
 ): AssigneeConfig {
   const found = assignees.find((a) => a.name === name);
   if (found) return found;
-  // Graceful fallback for unknown/removed assignees
   return { ...FALLBACK_ASSIGNEE, name, label: name, initials: name.slice(0, 2).toUpperCase() };
 }
 
@@ -147,6 +208,14 @@ export function getRepoConfig(
 ): RepoConfig {
   const found = repos.find((r) => r.name === name);
   if (found) return found;
-  // Graceful fallback for unknown/removed repos
   return { ...FALLBACK_REPO, name, label: name, shortLabel: name };
+}
+
+export function getClientConfig(
+  name: string,
+  clients: ClientConfig[]
+): ClientConfig {
+  const found = clients.find((c) => c.name === name);
+  if (found) return found;
+  return { ...FALLBACK_CLIENT, name, label: name };
 }

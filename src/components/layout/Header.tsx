@@ -33,7 +33,8 @@ export default function Header({
   const hasActiveFilters =
     (filters.assignee && filters.assignee !== "all") ||
     (filters.repo && filters.repo !== "all") ||
-    (filters.priority && filters.priority !== "all");
+    (filters.priority && filters.priority !== "all") ||
+    (filters.client && filters.client !== "all");
 
   return (
     <header className="border-b border-gray-800 bg-gray-900 px-3 py-2.5 sm:px-6 sm:py-3">
@@ -132,6 +133,26 @@ export default function Header({
                 </option>
               ))}
             </select>
+
+            {(settings.clients ?? []).length > 0 && (
+              <select
+                value={filters.client || "all"}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    client: e.target.value === "all" ? "all" : e.target.value,
+                  })
+                }
+                className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-sm text-gray-300"
+              >
+                <option value="all">All Clients</option>
+                {(settings.clients ?? []).map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Settings gear */}
@@ -253,6 +274,26 @@ export default function Header({
               </option>
             ))}
           </select>
+
+          {(settings.clients ?? []).length > 0 && (
+            <select
+              value={filters.client || "all"}
+              onChange={(e) =>
+                onFiltersChange({
+                  ...filters,
+                  client: e.target.value === "all" ? "all" : e.target.value,
+                })
+              }
+              className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-300"
+            >
+              <option value="all">All Clients</option>
+              {(settings.clients ?? []).map((c) => (
+                <option key={c.name} value={c.name}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       )}
     </header>

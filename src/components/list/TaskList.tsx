@@ -5,10 +5,13 @@ import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Task, AppSettings } from "@/lib/types";
 import TaskRow from "./TaskRow";
 
-type SortField = "title" | "status" | "priority" | "assignee" | "repo" | "dueDate";
+type SortField = "title" | "status" | "priority" | "assignee" | "repo" | "client" | "dueDate";
 type SortDirection = "asc" | "desc";
 
-const STATUS_ORDER = ["backlog", "todo", "in-progress", "issues", "done"];
+const STATUS_ORDER = [
+  "backlog", "pre-todo", "pre-in-progress", "pre-complete",
+  "dev-todo", "dev-in-progress", "dev-issue", "dev-complete",
+];
 const PRIORITY_ORDER = ["low", "medium", "high"];
 
 interface TaskListProps {
@@ -35,6 +38,9 @@ function compareTasks(a: Task, b: Task, field: SortField, dir: SortDirection): n
       break;
     case "repo":
       cmp = a.repo.localeCompare(b.repo);
+      break;
+    case "client":
+      cmp = (a.client || "").localeCompare(b.client || "");
       break;
     case "dueDate": {
       const aDate = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
@@ -120,6 +126,7 @@ export default function TaskList({ tasks, onTaskClick, settings }: TaskListProps
             <SortHeader label="Priority" field="priority" {...headerProps} className="hidden sm:table-cell" />
             <SortHeader label="Assignee" field="assignee" {...headerProps} className="hidden md:table-cell" />
             <SortHeader label="Repo" field="repo" {...headerProps} className="hidden lg:table-cell" />
+            <SortHeader label="Client" field="client" {...headerProps} className="hidden lg:table-cell" />
             <SortHeader label="Due Date" field="dueDate" {...headerProps} className="hidden sm:table-cell" />
           </tr>
         </thead>

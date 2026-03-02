@@ -28,7 +28,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { assignees, repos } = body as AppSettings;
+    const { assignees, repos, clients } = body as AppSettings;
 
     // Validate: at least one assignee
     if (!Array.isArray(assignees) || assignees.length === 0) {
@@ -72,8 +72,27 @@ export async function PUT(request: Request) {
       );
     }
 
+    // Validate: clients array (may be empty, but must be an array)
+    if (!Array.isArray(clients)) {
+      return NextResponse.json(
+        { error: "clients must be an array" },
+        { status: 400 }
+      );
+    }
+
+    // Validate: no duplicate client names
+    if (clients.length > 0) {
+      const clientNames = clients.map((c: { name: string }) => c.name);
+      if (new Set(clientNames).size !== clientNames.length) {
+        return NextResponse.json(
+          { error: "Duplicate client names are not allowed" },
+          { status: 400 }
+        );
+      }
+    }
+
     const { data, etag } = await readTasks();
-    data.settings = { assignees, repos };
+    data.settings = { assignees, repos, clients };
 
     const { etag: newEtag } = await writeTasks(data, etag);
     return NextResponse.json({ settings: data.settings, etag: newEtag });

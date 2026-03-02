@@ -8,6 +8,7 @@ import {
   PRIORITY_CONFIG,
   getAssigneeConfig,
   getRepoConfig,
+  getClientConfig,
 } from "@/lib/constants";
 
 interface TaskCardProps {
@@ -35,9 +36,12 @@ export default function TaskCard({ task, onClick, settings }: TaskCardProps) {
   const priority = PRIORITY_CONFIG[task.priority];
   const assignee = getAssigneeConfig(task.assignee, settings.assignees);
   const repo = getRepoConfig(task.repo, settings.repos);
+  const client = task.client
+    ? getClientConfig(task.client, settings.clients ?? [])
+    : null;
 
   const isOverdue =
-    task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done";
+    task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "dev-complete";
 
   return (
     <div
@@ -78,6 +82,13 @@ export default function TaskCard({ task, onClick, settings }: TaskCardProps) {
             >
               {repo.shortLabel}
             </span>
+            {client && (
+              <span
+                className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${client.color}`}
+              >
+                {client.label}
+              </span>
+            )}
           </div>
 
           <div className="mt-2 flex items-center justify-between">

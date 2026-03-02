@@ -49,6 +49,7 @@ export default function TaskDialog({
   const [priority, setPriority] = useState<Priority>("medium");
   const [assignee, setAssignee] = useState("unassigned");
   const [repo, setRepo] = useState(settings.repos[0]?.name ?? "");
+  const [client, setClient] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [commentText, setCommentText] = useState("");
   const [commentAuthor, setCommentAuthor] = useState(
@@ -67,6 +68,7 @@ export default function TaskDialog({
       setPriority(task.priority);
       setAssignee(task.assignee);
       setRepo(task.repo);
+      setClient(task.client || "");
       setDueDate(task.dueDate ? task.dueDate.split("T")[0] : "");
       setCommentText("");
       setConfirmingDelete(false);
@@ -77,6 +79,7 @@ export default function TaskDialog({
       setPriority("medium");
       setAssignee("unassigned");
       setRepo(settings.repos[0]?.name ?? "");
+      setClient("");
       setDueDate("");
       setCommentText("");
     }
@@ -93,6 +96,7 @@ export default function TaskDialog({
       priority,
       assignee,
       repo,
+      client,
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
     });
   };
@@ -212,18 +216,36 @@ export default function TaskDialog({
                 ))}
               </select>
             </div>
-          </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">
-              Due Date
-            </label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className={inputClasses}
-            />
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-300">
+                Client
+              </label>
+              <select
+                value={client}
+                onChange={(e) => setClient(e.target.value)}
+                className={inputClasses}
+              >
+                <option value="">No Client</option>
+                {(settings.clients ?? []).map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-300">
+                Due Date
+              </label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className={inputClasses}
+              />
+            </div>
           </div>
 
           {isEdit && (

@@ -6,6 +6,7 @@ import {
   PRIORITY_CONFIG,
   getAssigneeConfig,
   getRepoConfig,
+  getClientConfig,
 } from "@/lib/constants";
 
 interface TaskRowProps {
@@ -19,9 +20,12 @@ export default function TaskRow({ task, onClick, settings }: TaskRowProps) {
   const priority = PRIORITY_CONFIG[task.priority];
   const assignee = getAssigneeConfig(task.assignee, settings.assignees);
   const repo = getRepoConfig(task.repo, settings.repos);
+  const client = task.client
+    ? getClientConfig(task.client, settings.clients ?? [])
+    : null;
 
   const isOverdue =
-    task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done";
+    task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "dev-complete";
 
   return (
     <tr
@@ -59,6 +63,15 @@ export default function TaskRow({ task, onClick, settings }: TaskRowProps) {
         <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium ${repo.color}`}>
           {repo.shortLabel}
         </span>
+      </td>
+      <td className="px-3 sm:px-4 py-3 hidden lg:table-cell">
+        {client ? (
+          <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium ${client.color}`}>
+            {client.label}
+          </span>
+        ) : (
+          <span className="text-xs text-gray-600">--</span>
+        )}
       </td>
       <td className="px-3 sm:px-4 py-3 text-sm text-gray-500 hidden sm:table-cell">
         {task.dueDate ? (

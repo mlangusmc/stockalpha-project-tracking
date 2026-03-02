@@ -11,7 +11,7 @@ import {
   closestCorners,
 } from "@dnd-kit/core";
 import { Task, Status, AppSettings } from "@/lib/types";
-import { STATUS_ORDER } from "@/lib/constants";
+import { STATUS_ORDER, STATUS_GROUPS } from "@/lib/constants";
 import KanbanColumn from "./KanbanColumn";
 
 interface KanbanBoardProps {
@@ -42,14 +42,19 @@ export default function KanbanBoard({
 
   const tasksByStatus: Record<Status, Task[]> = {
     backlog: [],
-    todo: [],
-    "in-progress": [],
-    issues: [],
-    done: [],
+    "pre-todo": [],
+    "pre-in-progress": [],
+    "pre-complete": [],
+    "dev-todo": [],
+    "dev-in-progress": [],
+    "dev-issue": [],
+    "dev-complete": [],
   };
 
   tasks.forEach((task) => {
-    tasksByStatus[task.status].push(task);
+    if (tasksByStatus[task.status]) {
+      tasksByStatus[task.status].push(task);
+    }
   });
 
   function findColumnOfTask(taskId: string): Status | null {
@@ -112,15 +117,36 @@ export default function KanbanBoard({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 overflow-x-auto p-3 sm:gap-4 sm:p-4" style={{ minHeight: "calc(100vh - 56px)" }}>
-        {STATUS_ORDER.map((status) => (
-          <KanbanColumn
-            key={status}
-            status={status}
-            tasks={tasksByStatus[status]}
-            onTaskClick={onTaskClick}
-            settings={settings}
-          />
+      <div
+        className="flex gap-2 overflow-x-auto p-3 sm:gap-3 sm:p-4"
+        style={{ minHeight: "calc(100vh - 56px)" }}
+      >
+        {STATUS_GROUPS.map((group, gi) => (
+          <div key={group.label} className="flex gap-2 sm:gap-3">
+            {gi > 0 && (
+              <div className="flex flex-col items-center pt-1">
+                <div className="h-full w-px bg-gray-700/50" />
+              </div>
+            )}
+            <div className="flex flex-col gap-1">
+              <div className="px-1 pb-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                  {group.label}
+                </span>
+              </div>
+              <div className="flex gap-2 sm:gap-3">
+                {group.statuses.map((status) => (
+                  <KanbanColumn
+                    key={status}
+                    status={status}
+                    tasks={tasksByStatus[status]}
+                    onTaskClick={onTaskClick}
+                    settings={settings}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </DndContext>

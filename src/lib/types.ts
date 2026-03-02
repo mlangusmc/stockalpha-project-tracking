@@ -1,4 +1,12 @@
-export type Status = "backlog" | "todo" | "in-progress" | "issues" | "done";
+export type Status =
+  | "backlog"
+  | "pre-todo"
+  | "pre-in-progress"
+  | "pre-complete"
+  | "dev-todo"
+  | "dev-in-progress"
+  | "dev-issue"
+  | "dev-complete";
 export type Priority = "low" | "medium" | "high";
 export type Assignee = string;
 export type Repo = string;
@@ -17,9 +25,16 @@ export interface RepoConfig {
   color: string;
 }
 
+export interface ClientConfig {
+  name: string;
+  label: string;
+  color: string;
+}
+
 export interface AppSettings {
   assignees: AssigneeConfig[];
   repos: RepoConfig[];
+  clients: ClientConfig[];
 }
 
 export interface Comment {
@@ -36,6 +51,7 @@ export interface Task {
   status: Status;
   assignee: Assignee;
   repo: Repo;
+  client: string;
   priority: Priority;
   createdAt: string;
   updatedAt: string;
@@ -53,4 +69,5 @@ export interface TaskFilters {
   assignee?: Assignee | "all";
   repo?: Repo | "all";
   priority?: Priority | "all";
+  client?: string | "all";
 }
