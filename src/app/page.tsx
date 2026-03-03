@@ -19,6 +19,9 @@ export default function Home() {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Pause polling while any dialog is open to prevent overwriting user edits
+  const anyDialogOpen = taskDialogOpen || settingsOpen;
+
   const {
     tasks,
     loading,
@@ -28,9 +31,9 @@ export default function Home() {
     deleteTask,
     addComment,
     deleteComment,
-  } = useTasks(filters);
+  } = useTasks(filters, anyDialogOpen);
 
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings } = useSettings(anyDialogOpen);
 
   const filteredTasks = useMemo(() => {
     if (!search.trim()) return tasks;

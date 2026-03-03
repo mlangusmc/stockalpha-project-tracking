@@ -4,28 +4,39 @@ import { useState, useEffect, useCallback } from "react";
 import { AppSettings } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/constants";
 
-export function useSettings() {
+export function useSettings(paused = false) {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Pause polling while a dialog is open to prevent overwriting edits
+    if (paused) return;
+
+    let cancelled = false;
+
     async function fetchSettings() {
       try {
         const res = await fetch("/api/settings");
+        if (cancelled) return;
         if (!res.ok) throw new Error("Failed to fetch settings");
         const data = await res.json();
+        if (cancelled) return;
         setSettings(data.settings);
       } catch {
-        // Fall back to defaults on error
+        if (cancelled) return;
         setSettings(DEFAULT_SETTINGS);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
+
     fetchSettings();
     const interval = setInterval(fetchSettings, 30_000);
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [paused]);
 
   const updateSettings = useCallback(
     async (

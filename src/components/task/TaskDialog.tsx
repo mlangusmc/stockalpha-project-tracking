@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Trash2 } from "lucide-react";
 import { Task, Status, Priority, AppSettings } from "@/lib/types";
 import {
@@ -60,7 +60,16 @@ export default function TaskDialog({
   // Filter out "unassigned" from comment authors
   const commentAuthors = settings.assignees.filter((a) => a.name !== "unassigned");
 
+  // Only initialize form fields when the dialog transitions from closed → open.
+  // This prevents polling-triggered prop changes from wiping user edits.
+  const prevOpenRef = useRef(false);
+
   useEffect(() => {
+    const justOpened = open && !prevOpenRef.current;
+    prevOpenRef.current = open;
+
+    if (!justOpened) return;
+
     if (task) {
       setTitle(task.title);
       setDescription(task.description);
