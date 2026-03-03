@@ -1,10 +1,69 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Trash2, Plus, Pencil, Check } from "lucide-react";
+import { X, Trash2, Plus, Pencil, Check, GripVertical } from "lucide-react";
 import { AppSettings, AssigneeConfig, RepoConfig, ClientConfig } from "@/lib/types";
 import { ASSIGNEE_COLORS, REPO_COLORS, CLIENT_COLORS } from "@/lib/constants";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
+/* ── Sortable row wrapper ─────────────────────────────────────────── */
+function SortableSettingsItem({
+  id,
+  children,
+}: {
+  id: string;
+  children: React.ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 rounded-md bg-gray-800 px-3 py-2"
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="shrink-0 cursor-grab touch-none text-gray-600 hover:text-gray-400"
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      {children}
+    </div>
+  );
+}
+
+/* ── Settings dialog ──────────────────────────────────────────────── */
 interface SettingsDialogProps {
   open: boolean;
   settings: AppSettings;
@@ -42,6 +101,12 @@ export default function SettingsDialog({
   const [editingRepo, setEditingRepo] = useState<string | null>(null);
   const [editingClient, setEditingClient] = useState<string | null>(null);
 
+  // DnD sensors (shared across all three sections)
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
+
   // Re-sync local state when settings prop changes or dialog opens
   useEffect(() => {
     setAssignees(settings.assignees);
@@ -59,6 +124,37 @@ export default function SettingsDialog({
   }, [settings, open]);
 
   if (!open) return null;
+
+  // --- Drag-end handlers ---
+  const handleAssigneeDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setAssignees((prev) => {
+      const oldIndex = prev.findIndex((a) => a.name === active.id);
+      const newIndex = prev.findIndex((a) => a.name === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
+  const handleRepoDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setRepos((prev) => {
+      const oldIndex = prev.findIndex((r) => r.name === active.id);
+      const newIndex = prev.findIndex((r) => r.name === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
+  const handleClientDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setClients((prev) => {
+      const oldIndex = prev.findIndex((c) => c.name === active.id);
+      const newIndex = prev.findIndex((c) => c.name === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
 
   // --- Assignee handlers ---
   const handleDeleteAssignee = (name: string) => {
@@ -176,85 +272,86 @@ export default function SettingsDialog({
         {/* Assignees Section */}
         <div className="mb-6">
           <h3 className="mb-3 text-sm font-medium text-gray-300">Assignees</h3>
-          <div className="space-y-2 mb-3">
-            {assignees.map((a) => (
-              <div
-                key={a.name}
-                className="flex items-center gap-2 rounded-md bg-gray-800 px-3 py-2"
-              >
-                {editingAssignee === a.name && a.name !== "unassigned" ? (
-                  <>
-                    <span
-                      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white ${a.color}`}
-                    >
-                      {a.initials}
-                    </span>
-                    <input
-                      type="text"
-                      value={a.label}
-                      onChange={(e) => handleUpdateAssignee(a.name, { label: e.target.value })}
-                      className={`${editInputClasses} flex-1 min-w-0`}
-                    />
-                    <input
-                      type="text"
-                      value={a.initials}
-                      onChange={(e) => handleUpdateAssignee(a.name, { initials: e.target.value.slice(0, 3).toUpperCase() })}
-                      maxLength={3}
-                      className={`${editInputClasses} w-14 shrink-0 text-center`}
-                    />
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {ASSIGNEE_COLORS.slice(0, 8).map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => handleUpdateAssignee(a.name, { color: c })}
-                          className={`h-4 w-4 rounded-full ${c} ${
-                            a.color === c
-                              ? "ring-2 ring-white ring-offset-1 ring-offset-gray-800"
-                              : "opacity-50 hover:opacity-100"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setEditingAssignee(null)}
-                      className="shrink-0 rounded p-1 text-green-400 hover:bg-gray-700"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span
-                      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white ${a.color}`}
-                    >
-                      {a.initials}
-                    </span>
-                    <span className="flex-1 text-sm text-gray-200">{a.label}</span>
-                    {a.name !== "unassigned" && (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleAssigneeDragEnd}>
+            <SortableContext items={assignees.map((a) => a.name)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2 mb-3">
+                {assignees.map((a) => (
+                  <SortableSettingsItem key={a.name} id={a.name}>
+                    {editingAssignee === a.name && a.name !== "unassigned" ? (
                       <>
+                        <span
+                          className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white ${a.color}`}
+                        >
+                          {a.initials}
+                        </span>
+                        <input
+                          type="text"
+                          value={a.label}
+                          onChange={(e) => handleUpdateAssignee(a.name, { label: e.target.value })}
+                          className={`${editInputClasses} flex-1 min-w-0`}
+                        />
+                        <input
+                          type="text"
+                          value={a.initials}
+                          onChange={(e) => handleUpdateAssignee(a.name, { initials: e.target.value.slice(0, 3).toUpperCase() })}
+                          maxLength={3}
+                          className={`${editInputClasses} w-14 shrink-0 text-center`}
+                        />
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {ASSIGNEE_COLORS.slice(0, 8).map((c) => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => handleUpdateAssignee(a.name, { color: c })}
+                              className={`h-4 w-4 rounded-full ${c} ${
+                                a.color === c
+                                  ? "ring-2 ring-white ring-offset-1 ring-offset-gray-800"
+                                  : "opacity-50 hover:opacity-100"
+                              }`}
+                            />
+                          ))}
+                        </div>
                         <button
                           type="button"
-                          onClick={() => setEditingAssignee(a.name)}
-                          className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-blue-400"
+                          onClick={() => setEditingAssignee(null)}
+                          className="shrink-0 rounded p-1 text-green-400 hover:bg-gray-700"
                         >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteAssignee(a.name)}
-                          className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Check className="h-3.5 w-3.5" />
                         </button>
                       </>
+                    ) : (
+                      <>
+                        <span
+                          className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white ${a.color}`}
+                        >
+                          {a.initials}
+                        </span>
+                        <span className="flex-1 text-sm text-gray-200">{a.label}</span>
+                        {a.name !== "unassigned" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setEditingAssignee(a.name)}
+                              className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-blue-400"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAssignee(a.name)}
+                              className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
+                  </SortableSettingsItem>
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
 
           {/* Add assignee row */}
           <div className="space-y-2 rounded-md border border-gray-700 p-3">
@@ -305,83 +402,84 @@ export default function SettingsDialog({
         {/* Repos Section */}
         <div className="mb-6">
           <h3 className="mb-3 text-sm font-medium text-gray-300">Repos</h3>
-          <div className="space-y-2 mb-3">
-            {repos.map((r) => (
-              <div
-                key={r.name}
-                className="flex items-center gap-2 rounded-md bg-gray-800 px-3 py-2"
-              >
-                {editingRepo === r.name ? (
-                  <>
-                    <span
-                      className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${r.color}`}
-                    >
-                      {r.shortLabel}
-                    </span>
-                    <input
-                      type="text"
-                      value={r.label}
-                      onChange={(e) => handleUpdateRepo(r.name, { label: e.target.value })}
-                      placeholder="Full name"
-                      className={`${editInputClasses} flex-1 min-w-0`}
-                    />
-                    <input
-                      type="text"
-                      value={r.shortLabel}
-                      onChange={(e) => handleUpdateRepo(r.name, { shortLabel: e.target.value })}
-                      placeholder="Short"
-                      className={`${editInputClasses} w-20 shrink-0`}
-                    />
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {REPO_COLORS.slice(0, 6).map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => handleUpdateRepo(r.name, { color: c })}
-                          className={`h-4 w-4 rounded-full ${c.split(" ")[0]} ${
-                            r.color === c
-                              ? "ring-2 ring-white ring-offset-1 ring-offset-gray-800"
-                              : "opacity-50 hover:opacity-100"
-                          }`}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRepoDragEnd}>
+            <SortableContext items={repos.map((r) => r.name)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2 mb-3">
+                {repos.map((r) => (
+                  <SortableSettingsItem key={r.name} id={r.name}>
+                    {editingRepo === r.name ? (
+                      <>
+                        <span
+                          className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${r.color}`}
+                        >
+                          {r.shortLabel}
+                        </span>
+                        <input
+                          type="text"
+                          value={r.label}
+                          onChange={(e) => handleUpdateRepo(r.name, { label: e.target.value })}
+                          placeholder="Full name"
+                          className={`${editInputClasses} flex-1 min-w-0`}
                         />
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setEditingRepo(null)}
-                      className="shrink-0 rounded p-1 text-green-400 hover:bg-gray-700"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span
-                      className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${r.color}`}
-                    >
-                      {r.shortLabel}
-                    </span>
-                    <span className="flex-1 text-sm text-gray-200">{r.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setEditingRepo(r.name)}
-                      className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-blue-400"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteRepo(r.name)}
-                      disabled={repos.length <= 1}
-                      className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400 disabled:opacity-30 disabled:hover:text-gray-500 disabled:hover:bg-transparent"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </>
-                )}
+                        <input
+                          type="text"
+                          value={r.shortLabel}
+                          onChange={(e) => handleUpdateRepo(r.name, { shortLabel: e.target.value })}
+                          placeholder="Short"
+                          className={`${editInputClasses} w-20 shrink-0`}
+                        />
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {REPO_COLORS.slice(0, 6).map((c) => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => handleUpdateRepo(r.name, { color: c })}
+                              className={`h-4 w-4 rounded-full ${c.split(" ")[0]} ${
+                                r.color === c
+                                  ? "ring-2 ring-white ring-offset-1 ring-offset-gray-800"
+                                  : "opacity-50 hover:opacity-100"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingRepo(null)}
+                          className="shrink-0 rounded p-1 text-green-400 hover:bg-gray-700"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span
+                          className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${r.color}`}
+                        >
+                          {r.shortLabel}
+                        </span>
+                        <span className="flex-1 text-sm text-gray-200">{r.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingRepo(r.name)}
+                          className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-blue-400"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteRepo(r.name)}
+                          disabled={repos.length <= 1}
+                          className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400 disabled:opacity-30 disabled:hover:text-gray-500 disabled:hover:bg-transparent"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    )}
+                  </SortableSettingsItem>
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
 
           {/* Add repo row */}
           <div className="space-y-2 rounded-md border border-gray-700 p-3">
@@ -431,78 +529,79 @@ export default function SettingsDialog({
         {/* Clients Section */}
         <div className="mb-6">
           <h3 className="mb-3 text-sm font-medium text-gray-300">Clients</h3>
-          <div className="space-y-2 mb-3">
-            {clients.map((c) => (
-              <div
-                key={c.name}
-                className="flex items-center gap-2 rounded-md bg-gray-800 px-3 py-2"
-              >
-                {editingClient === c.name ? (
-                  <>
-                    <span
-                      className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${c.color}`}
-                    >
-                      {c.label}
-                    </span>
-                    <input
-                      type="text"
-                      value={c.label}
-                      onChange={(e) => handleUpdateClient(c.name, { label: e.target.value })}
-                      placeholder="Display label"
-                      className={`${editInputClasses} flex-1 min-w-0`}
-                    />
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {CLIENT_COLORS.slice(0, 6).map((clr) => (
-                        <button
-                          key={clr}
-                          type="button"
-                          onClick={() => handleUpdateClient(c.name, { color: clr })}
-                          className={`h-4 w-4 rounded-full ${clr.split(" ")[0]} ${
-                            c.color === clr
-                              ? "ring-2 ring-white ring-offset-1 ring-offset-gray-800"
-                              : "opacity-50 hover:opacity-100"
-                          }`}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleClientDragEnd}>
+            <SortableContext items={clients.map((c) => c.name)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2 mb-3">
+                {clients.map((c) => (
+                  <SortableSettingsItem key={c.name} id={c.name}>
+                    {editingClient === c.name ? (
+                      <>
+                        <span
+                          className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${c.color}`}
+                        >
+                          {c.label}
+                        </span>
+                        <input
+                          type="text"
+                          value={c.label}
+                          onChange={(e) => handleUpdateClient(c.name, { label: e.target.value })}
+                          placeholder="Display label"
+                          className={`${editInputClasses} flex-1 min-w-0`}
                         />
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setEditingClient(null)}
-                      className="shrink-0 rounded p-1 text-green-400 hover:bg-gray-700"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span
-                      className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${c.color}`}
-                    >
-                      {c.label}
-                    </span>
-                    <span className="flex-1 text-sm text-gray-200">{c.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setEditingClient(c.name)}
-                      className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-blue-400"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteClient(c.name)}
-                      className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {CLIENT_COLORS.slice(0, 6).map((clr) => (
+                            <button
+                              key={clr}
+                              type="button"
+                              onClick={() => handleUpdateClient(c.name, { color: clr })}
+                              className={`h-4 w-4 rounded-full ${clr.split(" ")[0]} ${
+                                c.color === clr
+                                  ? "ring-2 ring-white ring-offset-1 ring-offset-gray-800"
+                                  : "opacity-50 hover:opacity-100"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingClient(null)}
+                          className="shrink-0 rounded p-1 text-green-400 hover:bg-gray-700"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span
+                          className={`inline-block rounded-md px-1.5 py-0.5 text-[10px] font-medium ${c.color}`}
+                        >
+                          {c.label}
+                        </span>
+                        <span className="flex-1 text-sm text-gray-200">{c.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingClient(c.name)}
+                          className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-blue-400"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClient(c.name)}
+                          className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    )}
+                  </SortableSettingsItem>
+                ))}
+                {clients.length === 0 && (
+                  <p className="text-sm text-gray-500">No clients configured</p>
                 )}
               </div>
-            ))}
-            {clients.length === 0 && (
-              <p className="text-sm text-gray-500">No clients configured</p>
-            )}
-          </div>
+            </SortableContext>
+          </DndContext>
 
           {/* Add client row */}
           <div className="space-y-2 rounded-md border border-gray-700 p-3">
