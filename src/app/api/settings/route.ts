@@ -4,6 +4,9 @@ import { isAuthenticated } from "@/lib/auth";
 import { AppSettings } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/constants";
 
+// Force dynamic — prevent Next.js from caching this route handler
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const { data } = await readTasks();
