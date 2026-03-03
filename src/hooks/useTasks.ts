@@ -42,7 +42,7 @@ export function useTasks(filters?: TaskFilters) {
   const createTask = useCallback(
     async (
       task: Partial<Task>
-    ): Promise<{ success: boolean; needsAuth?: boolean }> => {
+    ): Promise<{ success: boolean }> => {
       try {
         const res = await fetch("/api/tasks", {
           method: "POST",
@@ -50,7 +50,7 @@ export function useTasks(filters?: TaskFilters) {
           body: JSON.stringify(task),
         });
 
-        if (res.status === 401) return { success: false, needsAuth: true };
+        
         if (res.status === 409) {
           await fetchTasks();
           return createTask(task);
@@ -73,7 +73,7 @@ export function useTasks(filters?: TaskFilters) {
     async (
       id: string,
       updates: Partial<Task>
-    ): Promise<{ success: boolean; needsAuth?: boolean }> => {
+    ): Promise<{ success: boolean }> => {
       try {
         const res = await fetch(`/api/tasks/${id}`, {
           method: "PUT",
@@ -81,7 +81,7 @@ export function useTasks(filters?: TaskFilters) {
           body: JSON.stringify(updates),
         });
 
-        if (res.status === 401) return { success: false, needsAuth: true };
+        
         if (res.status === 409) {
           await fetchTasks();
           return updateTask(id, updates);
@@ -105,13 +105,13 @@ export function useTasks(filters?: TaskFilters) {
   const deleteTask = useCallback(
     async (
       id: string
-    ): Promise<{ success: boolean; needsAuth?: boolean }> => {
+    ): Promise<{ success: boolean }> => {
       try {
         const res = await fetch(`/api/tasks/${id}`, {
           method: "DELETE",
         });
 
-        if (res.status === 401) return { success: false, needsAuth: true };
+        
         if (res.status === 409) {
           await fetchTasks();
           return deleteTask(id);
@@ -133,7 +133,7 @@ export function useTasks(filters?: TaskFilters) {
     async (
       taskId: string,
       comment: { author: string; content: string }
-    ): Promise<{ success: boolean; needsAuth?: boolean }> => {
+    ): Promise<{ success: boolean }> => {
       try {
         const res = await fetch(`/api/tasks/${taskId}/comments`, {
           method: "POST",
@@ -141,7 +141,7 @@ export function useTasks(filters?: TaskFilters) {
           body: JSON.stringify(comment),
         });
 
-        if (res.status === 401) return { success: false, needsAuth: true };
+        
         if (res.status === 409) {
           await fetchTasks();
           return addComment(taskId, comment);
@@ -165,14 +165,14 @@ export function useTasks(filters?: TaskFilters) {
     async (
       taskId: string,
       commentId: string
-    ): Promise<{ success: boolean; needsAuth?: boolean }> => {
+    ): Promise<{ success: boolean }> => {
       try {
         const res = await fetch(
           `/api/tasks/${taskId}/comments?commentId=${commentId}`,
           { method: "DELETE" }
         );
 
-        if (res.status === 401) return { success: false, needsAuth: true };
+        
         if (res.status === 409) {
           await fetchTasks();
           return deleteComment(taskId, commentId);

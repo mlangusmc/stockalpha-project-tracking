@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
 import { readTasks, writeTasks, ConflictError } from "@/lib/store";
-import { isAuthenticated } from "@/lib/auth";
 import { Comment } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/constants";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authed = await isAuthenticated();
-    if (!authed) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id } = await params;
     const body = await request.json();
     const { author, content } = body;
@@ -69,11 +65,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authed = await isAuthenticated();
-    if (!authed) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const commentId = searchParams.get("commentId");

@@ -2,13 +2,11 @@
 
 import { useState, useCallback, useMemo } from "react";
 import Header from "@/components/layout/Header";
-import PinDialog from "@/components/layout/PinDialog";
 import TaskDialog from "@/components/task/TaskDialog";
 import KanbanBoard from "@/components/board/KanbanBoard";
 import TaskList from "@/components/list/TaskList";
 import SettingsDialog from "@/components/settings/SettingsDialog";
 import { useTasks } from "@/hooks/useTasks";
-import { useAuth } from "@/hooks/useAuth";
 import { useSettings } from "@/hooks/useSettings";
 import { Task, TaskFilters, Status, AppSettings } from "@/lib/types";
 import { Loader2 } from "lucide-react";
@@ -49,13 +47,6 @@ export default function Home() {
     [editingTaskId, tasks]
   );
 
-  const {
-    showPinDialog,
-    handleAuthRequired,
-    handlePinSuccess,
-    handlePinCancel,
-  } = useAuth();
-
   const handleNewTask = useCallback(() => {
     setEditingTaskId(null);
     setTaskDialogOpen(true);
@@ -68,114 +59,58 @@ export default function Home() {
 
   const handleSave = useCallback(
     async (data: Partial<Task>) => {
-      let result;
-      if (editingTask) {
-        result = await updateTask(editingTask.id, data);
-      } else {
-        result = await createTask(data);
-      }
-
-      if (result.needsAuth) {
-        handleAuthRequired(() => {
-          if (editingTask) {
-            updateTask(editingTask.id, data);
-          } else {
-            createTask(data);
-          }
-          setTaskDialogOpen(false);
-          setEditingTaskId(null);
-        });
-        return;
-      }
+      const result = editingTask
+        ? await updateTask(editingTask.id, data)
+        : await createTask(data);
 
       if (result.success) {
         setTaskDialogOpen(false);
         setEditingTaskId(null);
       }
     },
-    [editingTask, createTask, updateTask, handleAuthRequired]
+    [editingTask, createTask, updateTask]
   );
 
   const handleDelete = useCallback(
     async (id: string) => {
       const result = await deleteTask(id);
-
-      if (result.needsAuth) {
-        handleAuthRequired(() => {
-          deleteTask(id);
-          setTaskDialogOpen(false);
-          setEditingTaskId(null);
-        });
-        return;
-      }
-
       if (result.success) {
         setTaskDialogOpen(false);
         setEditingTaskId(null);
       }
     },
-    [deleteTask, handleAuthRequired]
+    [deleteTask]
   );
 
   const handleAddComment = useCallback(
     async (taskId: string, comment: { author: string; content: string }) => {
-      const result = await addComment(taskId, comment);
-
-      if (result.needsAuth) {
-        handleAuthRequired(() => {
-          addComment(taskId, comment);
-        });
-      }
+      await addComment(taskId, comment);
     },
-    [addComment, handleAuthRequired]
+    [addComment]
   );
 
   const handleDeleteComment = useCallback(
     async (taskId: string, commentId: string) => {
-      const result = await deleteComment(taskId, commentId);
-
-      if (result.needsAuth) {
-        handleAuthRequired(() => {
-          deleteComment(taskId, commentId);
-        });
-      }
+      await deleteComment(taskId, commentId);
     },
-    [deleteComment, handleAuthRequired]
+    [deleteComment]
   );
 
   const handleTaskMove = useCallback(
     async (taskId: string, newStatus: Status, newOrder: number) => {
-      const result = await updateTask(taskId, {
-        status: newStatus,
-        order: newOrder,
-      });
-
-      if (result.needsAuth) {
-        handleAuthRequired(() => {
-          updateTask(taskId, { status: newStatus, order: newOrder });
-        });
-      }
+      await updateTask(taskId, { status: newStatus, order: newOrder });
     },
-    [updateTask, handleAuthRequired]
+    [updateTask]
   );
 
   const handleSettingsSave = useCallback(
     async (newSettings: AppSettings) => {
       const result = await updateSettings(newSettings);
-
-      if (result.needsAuth) {
-        handleAuthRequired(async () => {
-          await updateSettings(newSettings);
-          setSettingsOpen(false);
-        });
-        return;
-      }
-
       if (result.success) {
         setSettingsOpen(false);
       }
     },
-    [updateSettings, handleAuthRequired]
+    [updateSettings]
   );
 
   return (
@@ -235,12 +170,6 @@ export default function Home() {
         settings={settings}
         onSave={handleSettingsSave}
         onClose={() => setSettingsOpen(false)}
-      />
-
-      <PinDialog
-        open={showPinDialog}
-        onSuccess={handlePinSuccess}
-        onCancel={handlePinCancel}
       />
     </div>
   );

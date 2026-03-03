@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readTasks, writeTasks, ConflictError } from "@/lib/store";
-import { isAuthenticated } from "@/lib/auth";
 import { Task, Status, Priority } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/constants";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,11 +48,6 @@ export async function GET(request: NextRequest) {
 // Batch update: PATCH /api/tasks  body: { updates: [{ id, ...fields }] }
 export async function PATCH(request: Request) {
   try {
-    const authed = await isAuthenticated();
-    if (!authed) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { updates } = await request.json();
     if (!Array.isArray(updates) || updates.length === 0) {
       return NextResponse.json(
@@ -88,11 +84,6 @@ export async function PATCH(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const authed = await isAuthenticated();
-    if (!authed) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { data, etag } = await readTasks();
 

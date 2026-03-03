@@ -28,7 +28,7 @@ export function useSettings() {
   const updateSettings = useCallback(
     async (
       newSettings: AppSettings
-    ): Promise<{ success: boolean; needsAuth?: boolean }> => {
+    ): Promise<{ success: boolean }> => {
       try {
         const res = await fetch("/api/settings", {
           method: "PUT",
@@ -36,7 +36,6 @@ export function useSettings() {
           body: JSON.stringify(newSettings),
         });
 
-        if (res.status === 401) return { success: false, needsAuth: true };
         if (!res.ok) throw new Error("Failed to update settings");
 
         const data = await res.json();

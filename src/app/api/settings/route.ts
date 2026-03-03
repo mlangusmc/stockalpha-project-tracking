@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { readTasks, writeTasks, ConflictError } from "@/lib/store";
-import { isAuthenticated } from "@/lib/auth";
 import { AppSettings } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/constants";
 
@@ -25,11 +24,6 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const authed = await isAuthenticated();
-    if (!authed) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { assignees, repos, clients } = body as AppSettings;
 
