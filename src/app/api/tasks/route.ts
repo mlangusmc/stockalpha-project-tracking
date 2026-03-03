@@ -44,6 +44,48 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Batch update: PATCH /api/tasks  body: { updates: [{ id, ...fields }] }
+export async function PATCH(request: Request) {
+  try {
+    const authed = await isAuthenticated();
+    if (!authed) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { updates } = await request.json();
+    if (!Array.isArray(updates) || updates.length === 0) {
+      return NextResponse.json(
+        { error: "updates must be a non-empty array" },
+        { status: 400 }
+      );
+    }
+
+    const { data, etag } = await readTasks();
+    const now = new Date().toISOString();
+
+    for (const update of updates) {
+      const { id, ...fields } = update;
+      const index = data.tasks.findIndex((t) => t.id === id);
+      if (index === -1) continue;
+      data.tasks[index] = { ...data.tasks[index], ...fields, id, updatedAt: now };
+    }
+
+    const { etag: newEtag } = await writeTasks(data, etag);
+    return NextResponse.json({ tasks: data.tasks, etag: newEtag });
+  } catch (error) {
+    if (error instanceof ConflictError) {
+      return NextResponse.json(
+        { error: "Conflict — please retry" },
+        { status: 409 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to batch update", detail: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const authed = await isAuthenticated();
