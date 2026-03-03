@@ -179,7 +179,7 @@ export default function Home() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <Header
         view={view}
         onViewChange={setView}
@@ -192,7 +192,7 @@ export default function Home() {
         onSettingsClick={() => setSettingsOpen(true)}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 min-h-0 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-gray-600" />

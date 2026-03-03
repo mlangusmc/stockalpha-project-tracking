@@ -23,7 +23,15 @@
       "Bash(cd:*)",
       "Bash(source:*)",
       "Bash(start:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(netstat:*)",
+      "Bash(echo Auth response: $AUTH_RESPONSE:*)",
+      "Bash(echo Current tasks::*)",
+      "Bash(echo Deleting task 1...:*)",
+      "Bash(local:*)",
+      "Bash(echo Remaining tasks::*)",
+      "Bash(echo Deleting task 3 again...:*)",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); tasks=data.get\\(''tasks'',[]\\);:*)"
     ]
   }
 }

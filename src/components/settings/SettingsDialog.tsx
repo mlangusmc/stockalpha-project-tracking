@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Trash2, Plus, Pencil, Check } from "lucide-react";
 import { AppSettings, AssigneeConfig, RepoConfig, ClientConfig } from "@/lib/types";
 import { ASSIGNEE_COLORS, REPO_COLORS, CLIENT_COLORS } from "@/lib/constants";
@@ -30,15 +30,33 @@ export default function SettingsDialog({
   // New repo form state
   const [newRepoName, setNewRepoName] = useState("");
   const [newRepoShortLabel, setNewRepoShortLabel] = useState("");
+  const [newRepoColor, setNewRepoColor] = useState(REPO_COLORS[0]);
 
   // New client form state
   const [newClientName, setNewClientName] = useState("");
   const [newClientLabel, setNewClientLabel] = useState("");
+  const [newClientColor, setNewClientColor] = useState(CLIENT_COLORS[0]);
 
   // Editing state
   const [editingAssignee, setEditingAssignee] = useState<string | null>(null);
   const [editingRepo, setEditingRepo] = useState<string | null>(null);
   const [editingClient, setEditingClient] = useState<string | null>(null);
+
+  // Re-sync local state when settings prop changes or dialog opens
+  useEffect(() => {
+    setAssignees(settings.assignees);
+    setRepos(settings.repos);
+    setClients(settings.clients ?? []);
+    setEditingAssignee(null);
+    setEditingRepo(null);
+    setEditingClient(null);
+    setNewAssigneeName("");
+    setNewAssigneeInitials("");
+    setNewRepoName("");
+    setNewRepoShortLabel("");
+    setNewClientName("");
+    setNewClientLabel("");
+  }, [settings, open]);
 
   if (!open) return null;
 
@@ -91,15 +109,15 @@ export default function SettingsDialog({
     if (!name) return;
     if (repos.some((r) => r.name === name)) return;
 
-    const usedColors = new Set(repos.map((r) => r.color));
-    const color = REPO_COLORS.find((c) => !usedColors.has(c)) || REPO_COLORS[0];
-
     setRepos((prev) => [
       ...prev,
-      { name, label: name, shortLabel, color },
+      { name, label: name, shortLabel, color: newRepoColor },
     ]);
     setNewRepoName("");
     setNewRepoShortLabel("");
+    const usedColors = new Set([...repos.map((r) => r.color), newRepoColor]);
+    const nextColor = REPO_COLORS.find((c) => !usedColors.has(c)) || REPO_COLORS[0];
+    setNewRepoColor(nextColor);
   };
 
   // --- Client handlers ---
@@ -120,12 +138,12 @@ export default function SettingsDialog({
     if (!name) return;
     if (clients.some((c) => c.name === name)) return;
 
-    const usedColors = new Set(clients.map((c) => c.color));
-    const color = CLIENT_COLORS.find((c) => !usedColors.has(c)) || CLIENT_COLORS[0];
-
-    setClients((prev) => [...prev, { name, label, color }]);
+    setClients((prev) => [...prev, { name, label, color: newClientColor }]);
     setNewClientName("");
     setNewClientLabel("");
+    const usedColors = new Set([...clients.map((c) => c.color), newClientColor]);
+    const nextColor = CLIENT_COLORS.find((c) => !usedColors.has(c)) || CLIENT_COLORS[0];
+    setNewClientColor(nextColor);
   };
 
   const handleSave = () => {
@@ -312,7 +330,7 @@ export default function SettingsDialog({
                       value={r.shortLabel}
                       onChange={(e) => handleUpdateRepo(r.name, { shortLabel: e.target.value })}
                       placeholder="Short"
-                      className={`${editInputClasses} w-24 shrink-0`}
+                      className={`${editInputClasses} w-20 shrink-0`}
                     />
                     <div className="flex items-center gap-1 flex-wrap">
                       {REPO_COLORS.slice(0, 6).map((c) => (
@@ -373,15 +391,30 @@ export default function SettingsDialog({
                 value={newRepoName}
                 onChange={(e) => setNewRepoName(e.target.value)}
                 placeholder="Repo name"
-                className={inputClasses}
+                className={`${inputClasses} flex-1 min-w-0`}
               />
               <input
                 type="text"
                 value={newRepoShortLabel}
                 onChange={(e) => setNewRepoShortLabel(e.target.value)}
                 placeholder="Short label"
-                className={`${inputClasses} w-28 shrink-0`}
+                className={`${inputClasses} !w-24 shrink-0`}
               />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-500">Color:</span>
+              {REPO_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setNewRepoColor(c)}
+                  className={`h-5 w-5 rounded-full ${c.split(" ")[0]} ${
+                    newRepoColor === c
+                      ? "ring-2 ring-white ring-offset-1 ring-offset-gray-900"
+                      : "opacity-60 hover:opacity-100"
+                  }`}
+                />
+              ))}
             </div>
             <button
               type="button"
@@ -479,15 +512,30 @@ export default function SettingsDialog({
                 value={newClientName}
                 onChange={(e) => setNewClientName(e.target.value)}
                 placeholder="Client name"
-                className={inputClasses}
+                className={`${inputClasses} flex-1 min-w-0`}
               />
               <input
                 type="text"
                 value={newClientLabel}
                 onChange={(e) => setNewClientLabel(e.target.value)}
                 placeholder="Display label"
-                className={`${inputClasses} w-28 shrink-0`}
+                className={`${inputClasses} !w-24 shrink-0`}
               />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-500">Color:</span>
+              {CLIENT_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setNewClientColor(c)}
+                  className={`h-5 w-5 rounded-full ${c.split(" ")[0]} ${
+                    newClientColor === c
+                      ? "ring-2 ring-white ring-offset-1 ring-offset-gray-900"
+                      : "opacity-60 hover:opacity-100"
+                  }`}
+                />
+              ))}
             </div>
             <button
               type="button"

@@ -28,7 +28,7 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`flex h-full min-w-[220px] sm:min-w-[250px] flex-col rounded-lg bg-gray-900/50 ${
+      className={`flex h-full w-[220px] shrink-0 sm:w-[250px] flex-col rounded-lg bg-gray-900/50 ${
         isOver ? "ring-2 ring-blue-500" : ""
       }`}
     >
