@@ -11,6 +11,18 @@ import {
   getClientConfig,
 } from "@/lib/constants";
 
+function formatRelativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
 interface TaskCardProps {
   task: Task;
   onClick: (task: Task) => void;
@@ -101,13 +113,17 @@ export default function TaskCard({ task, onClick, settings }: TaskCardProps) {
               <span className="text-xs text-gray-500">{assignee.label}</span>
             </div>
 
-            {task.dueDate && (
+            {task.dueDate ? (
               <span
                 className={`text-xs ${
                   isOverdue ? "font-medium text-red-400" : "text-gray-500"
                 }`}
               >
                 {new Date(task.dueDate).toLocaleDateString()}
+              </span>
+            ) : (
+              <span className="text-[10px] text-gray-600" title={new Date(task.updatedAt).toLocaleString()}>
+                {formatRelativeTime(task.updatedAt)}
               </span>
             )}
           </div>

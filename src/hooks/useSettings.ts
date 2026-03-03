@@ -23,6 +23,8 @@ export function useSettings() {
       }
     }
     fetchSettings();
+    const interval = setInterval(fetchSettings, 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   const updateSettings = useCallback(

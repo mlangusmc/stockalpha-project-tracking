@@ -37,6 +37,9 @@ export function useTasks(filters?: TaskFilters) {
 
   useEffect(() => {
     fetchTasks();
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchTasks, 30_000);
+    return () => clearInterval(interval);
   }, [fetchTasks]);
 
   const createTask = useCallback(
@@ -74,6 +77,13 @@ export function useTasks(filters?: TaskFilters) {
       id: string,
       updates: Partial<Task>
     ): Promise<{ success: boolean }> => {
+      // Apply optimistic update and capture snapshot for rollback
+      let snapshot: Task[] = [];
+      setTasks((prev) => {
+        snapshot = prev;
+        return prev.map((t) => (t.id === id ? { ...t, ...updates } : t));
+      });
+
       try {
         const res = await fetch(`/api/tasks/${id}`, {
           method: "PUT",
@@ -81,7 +91,6 @@ export function useTasks(filters?: TaskFilters) {
           body: JSON.stringify(updates),
         });
 
-        
         if (res.status === 409) {
           await fetchTasks();
           return updateTask(id, updates);
@@ -89,12 +98,13 @@ export function useTasks(filters?: TaskFilters) {
         if (!res.ok) throw new Error("Failed to update task");
 
         const data = await res.json();
-        // Optimistic update: replace the task in local state
         setTasks((prev) =>
           prev.map((t) => (t.id === id ? data.task : t))
         );
         return { success: true };
       } catch (err) {
+        // Rollback on failure
+        if (snapshot.length) setTasks(snapshot);
         setError(err instanceof Error ? err.message : "Unknown error");
         return { success: false };
       }
@@ -106,22 +116,28 @@ export function useTasks(filters?: TaskFilters) {
     async (
       id: string
     ): Promise<{ success: boolean }> => {
+      // Apply optimistic delete and capture snapshot for rollback
+      let snapshot: Task[] = [];
+      setTasks((prev) => {
+        snapshot = prev;
+        return prev.filter((t) => t.id !== id);
+      });
+
       try {
         const res = await fetch(`/api/tasks/${id}`, {
           method: "DELETE",
         });
 
-        
         if (res.status === 409) {
           await fetchTasks();
           return deleteTask(id);
         }
         if (!res.ok) throw new Error("Failed to delete task");
 
-        // Optimistic update: remove the task from local state
-        setTasks((prev) => prev.filter((t) => t.id !== id));
         return { success: true };
       } catch (err) {
+        // Rollback on failure
+        if (snapshot.length) setTasks(snapshot);
         setError(err instanceof Error ? err.message : "Unknown error");
         return { success: false };
       }
