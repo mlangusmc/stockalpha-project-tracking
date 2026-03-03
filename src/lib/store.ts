@@ -119,6 +119,7 @@ async function writeToBlob(
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: "application/json",
+    cacheControlMaxAge: 0,
   });
 
   return { etag: blob.etag };
